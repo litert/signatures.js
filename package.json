@@ -1,0 +1,47 @@
+{
+  "name": "@litert/signatures",
+  "version": "1.0.0",
+  "description": "A signatures library based on Node.js crypto module.",
+  "main": "./lib/index.js",
+  "scripts": {
+    "prepare": "npm run rebuild",
+    "build": "echo Using TypeScript && tsc -v && tsc -p .",
+    "build-watch": "echo Using TypeScript && tsc -v && tsc -w -p .",
+    "rebuild": "npm run clean && npm run lint && npm run build",
+    "test": "echo See directory src/samples",
+    "clean": "rm -rf lib samples",
+    "lint": "tslint -p . -c tslint.json"
+  },
+  "keywords": [
+    "litert",
+    "lrt",
+    "signature",
+    "hmac",
+    "rsa",
+    "ecdsa",
+    "verify"
+  ],
+  "author": "Angus.Fenying <fenying@litert.org> (https://fenying.net)",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/litert/signatures.js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/litert/signatures.js/issues"
+  },
+  "homepage": "https://github.com/litert/signatures.js#readme",
+  "types": "./lib/index.d.ts",
+  "typings": "./lib/index.d.ts",
+  "dependencies": {
+    "@litert/encodings": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^10.12.2",
+    "bn.js": "^4.11.8",
+    "typescript": "^3.1.4"
+  },
+  "engines": {
+    "node": ">=6.0.0"
+  }
+}
