@@ -15,7 +15,7 @@
  */
 
 import * as C from "./Common";
-import * as I from "./internal";
+import * as I from "./Internal";
 import * as Enc from "@litert/encodings";
 import * as $Crypto from "crypto";
 
