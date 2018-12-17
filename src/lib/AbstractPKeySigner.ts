@@ -18,11 +18,12 @@ import * as C from "./Common";
 import * as I from "./Internal";
 import * as Enc from "@litert/encodings";
 import * as $Crypto from "crypto";
+import * as $Stream from "stream";
 
 export abstract class AbstractPKeySigner<D extends C.ValidEncoding>
-implements C.ISigner<C.IPKeySignKeyFormat, D> {
+implements C.ISigner<C.IPairKeyFormat, D> {
 
-    private _key?: C.IPKeySignKeyFormat["construct"];
+    private _key?: C.IPairKeyFormat["construct"];
 
     private _algo: C.ValidHashAlgoritms;
 
@@ -41,7 +42,7 @@ implements C.ISigner<C.IPKeySignKeyFormat, D> {
     public constructor(
         hashAlgo: C.ValidHashAlgoritms,
         signAlgo: C.ValidSignAlgorithms,
-        key?: C.IPKeySignKeyFormat["construct"],
+        key?: C.IPairKeyFormat["construct"],
         encoding: C.ValidEncoding = "buffer",
         padding?: number,
         saltLength?: number
@@ -69,7 +70,7 @@ implements C.ISigner<C.IPKeySignKeyFormat, D> {
         }
     }
 
-    public get key(): C.IPKeySignKeyFormat["construct"] | undefined {
+    public get key(): C.IPairKeyFormat["construct"] | undefined {
 
         return this._key;
     }
@@ -92,7 +93,7 @@ implements C.ISigner<C.IPKeySignKeyFormat, D> {
 
         message: string | Buffer;
 
-        key?: C.IPKeySignKeyFormat["sign"];
+        key?: C.IPairKeyFormat["sign"];
 
         encoding?: E;
 
@@ -116,13 +117,55 @@ implements C.ISigner<C.IPKeySignKeyFormat, D> {
         );
     }
 
+    public signStream<E extends C.ValidEncoding>(opts: {
+
+        message: $Stream.Readable;
+
+        key?: C.IPairKeyFormat["sign"];
+
+        encoding?: E;
+
+    }): Promise<C.IOutputType[E]> {
+
+        return new Promise<C.IOutputType[E]>((resolve, reject) => {
+
+            const hasher = $Crypto.createSign(this._algo);
+
+            opts.message.pipe(hasher).once("finish", (): void => {
+
+                let data: C.IOutputType[E];
+
+                try {
+
+                    data = Enc.convert(
+                        hasher.sign(
+                            (opts.key && I.wrapKey(
+                                opts.key,
+                                this._padding,
+                                this._saltLength
+                            )) || (this._key && this._privKey) as any
+                        ),
+                        (opts.encoding || this._encoding) as any,
+                        "buffer"
+                    );
+                }
+                catch (e) {
+
+                    return reject(e);
+                }
+
+                resolve(data);
+            });
+        });
+    }
+
     public verify<E extends keyof C.IOutputType>(opts: {
 
         message: string | Buffer;
 
         signature: C.IOutputType[E];
 
-        key?: C.IPKeySignKeyFormat["verify"];
+        key?: C.IPairKeyFormat["verify"];
 
         encoding?: E;
 
@@ -146,5 +189,50 @@ implements C.ISigner<C.IPKeySignKeyFormat, D> {
                 opts.encoding || this._encoding as any
             )
         );
+    }
+
+    public verifyStream<E extends keyof C.IOutputType>(opts: {
+
+        message: $Stream.Readable;
+
+        signature: C.IOutputType[E];
+
+        key?: C.IPairKeyFormat["verify"];
+
+        encoding?: E;
+
+    }): Promise<boolean> {
+
+        return new Promise<boolean>((resolve, reject) => {
+
+            const hasher = $Crypto.createVerify(this._algo);
+
+            opts.message.pipe(hasher).once("finish", (): void => {
+
+                let result: boolean = false;
+
+                try {
+
+                    result = hasher.verify(
+                        (opts.key && I.wrapKey(
+                            opts.key,
+                            this._padding,
+                            this._saltLength
+                        )) || (this._key && this._pubKey) as any,
+                        Enc.convert(
+                            opts.signature as any,
+                            "buffer",
+                            opts.encoding || this._encoding as any
+                        )
+                    );
+                }
+                catch (e) {
+
+                    return reject(e);
+                }
+
+                resolve(result);
+            });
+        });
     }
 }

@@ -17,6 +17,7 @@
 // tslint:disable:no-console
 
 import * as Signs from "../lib";
+import * as $fs from "fs";
 
 const KEY = "hello world!";
 
@@ -55,3 +56,38 @@ for (let a of Signs.listHashAlgorithms()) {
         console.error(`[${signer.algorithm.name}] Verification failed.`);
     }
 }
+
+(async () => {
+
+    for (let a of Signs.listHashAlgorithms()) {
+
+        const signer = Signs.createHMACSigner({
+            hash: a,
+            encoding: "base64"
+        });
+
+        const result = await signer.signStream({
+            message: $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
+            key: KEY
+        });
+
+        console.debug(`[${signer.algorithm.name}][Stream]: Result = ${result}`);
+
+        if ((await signer.verifyStream({
+            message: $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
+            signature: result,
+            key: KEY
+        })) && !(await signer.verifyStream({
+            message: $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
+            signature: result,
+            key: FAKE_KEY
+        }))) {
+
+            console.info(`[${signer.algorithm.name}][Stream] Verification matched.`);
+        }
+        else {
+
+            console.error(`[${signer.algorithm.name}][Stream] Verification failed.`);
+        }
+    }
+})();

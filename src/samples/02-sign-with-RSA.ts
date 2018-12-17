@@ -17,17 +17,17 @@
 // tslint:disable:no-console
 
 import * as Signs from "../lib";
-import * as $FS from "fs";
+import * as $fs from "fs";
 
-const PRI_KEY = $FS.readFileSync(`${__dirname}/../test/rsa-priv.pem`, {
+const PRI_KEY = $fs.readFileSync(`${__dirname}/../test/rsa-priv.pem`, {
     encoding: "utf8"
 });
 
-const PUB_KEY = $FS.readFileSync(`${__dirname}/../test/rsa-pub.pem`, {
+const PUB_KEY = $fs.readFileSync(`${__dirname}/../test/rsa-pub.pem`, {
     encoding: "utf8"
 });
 
-const WRONG_PUB_KEY = $FS.readFileSync(`${__dirname}/../test/rsa-wrong-pub.pem`, {
+const WRONG_PUB_KEY = $fs.readFileSync(`${__dirname}/../test/rsa-wrong-pub.pem`, {
     encoding: "utf8"
 });
 
@@ -77,3 +77,52 @@ for (let a of Signs.listHashAlgorithms()) {
         console.error(`[${signer.algorithm.name}] Not supported with RSASSA-PKCS1-v1.5.`);
     }
 }
+
+(async () => {
+
+    for (let a of Signs.listHashAlgorithms()) {
+
+        const signer = Signs.createRSASigner({
+            "hash": a,
+            "key": {
+                "private": PRI_KEY,
+                "public": PUB_KEY
+            },
+            "encoding": "base64url"
+        });
+
+        try {
+
+            const signResult = await signer.signStream({
+                message: $fs.createReadStream(`${__dirname}/../test/bigfile.dat`)
+            });
+
+            const verifyResult = await signer.verifyStream({
+                message: $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
+                signature: signResult
+            });
+
+            const verifyResultWWK = await signer.verifyStream({
+                message: $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
+                signature: signResult,
+                key: WRONG_PUB_KEY
+            });
+
+            console.debug(`[${signer.algorithm.name}][Stream]: Result ${signResult}`);
+
+            if (verifyResult && !verifyResultWWK) {
+
+                console.info(`[${signer.algorithm.name}][Stream] Verification matched.`);
+            }
+            else {
+
+                console.error(`[${signer.algorithm.name}][Stream] Verification failed.`);
+            }
+        }
+        catch (e) {
+
+            console.error(`[${signer.algorithm.name}][Stream] Not supported with RSASSA-PKCS1-v1.5.`);
+        }
+    }
+
+})();

@@ -25,7 +25,7 @@ class RSASigner<D extends C.ValidEncoding>
 
     public constructor(
         hashAlgo: C.ValidHashAlgoritms,
-        key?: C.IPKeySignKeyFormat["construct"],
+        key?: C.IPairKeyFormat["construct"],
         encoding: C.ValidEncoding = "buffer",
         padding: RSAPaddingType = "pkcs1-v1_5"
     ) {
@@ -56,7 +56,7 @@ class RSASigner<D extends C.ValidEncoding>
 
 export interface IRSASignerOptions<D extends C.ValidEncoding = "buffer">
 extends C.ISignerOptions<
-    C.IPKeySignKeyFormat,
+    C.IPairKeyFormat,
     D
 > {
     "padding"?: RSAPaddingType;
@@ -64,7 +64,7 @@ extends C.ISignerOptions<
 
 export function createRSASigner<D extends C.ValidEncoding = "buffer">(
     opts: IRSASignerOptions<D>
-): C.ISigner<C.IPKeySignKeyFormat, D> {
+): C.ISigner<C.IPairKeyFormat, D> {
 
     return new RSASigner<D>(
         opts.hash,

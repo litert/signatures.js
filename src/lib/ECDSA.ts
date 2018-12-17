@@ -18,6 +18,7 @@ import { AbstractPKeySigner } from "./AbstractPKeySigner";
 import * as C from "./Common";
 import * as Enc from "@litert/encodings";
 import * as U from "./Utils";
+import * as $Stream from "stream";
 
 export type ECDSAOutput = "der" | "p1363";
 
@@ -26,7 +27,7 @@ class ECDSASignerDER<D extends C.ValidEncoding>
 
     public constructor(
         algo: C.ValidHashAlgoritms,
-        key?: C.IPKeySignKeyFormat["construct"],
+        key?: C.IPairKeyFormat["construct"],
         encoding: C.ValidEncoding = "buffer"
     ) {
 
@@ -44,7 +45,7 @@ extends AbstractPKeySigner<D> {
 
     public constructor(
         algo: C.ValidHashAlgoritms,
-        key?: C.IPKeySignKeyFormat["construct"],
+        key?: C.IPairKeyFormat["construct"],
         encoding: C.ValidEncoding = "buffer"
     ) {
 
@@ -60,7 +61,7 @@ extends AbstractPKeySigner<D> {
 
         message: string | Buffer;
 
-        key?: C.IPKeySignKeyFormat["sign"];
+        key?: C.IPairKeyFormat["sign"];
 
         encoding?: E;
 
@@ -73,13 +74,30 @@ extends AbstractPKeySigner<D> {
         })), opts.encoding || this.encoding as any);
     }
 
+    public async signStream<E extends C.ValidEncoding>(opts: {
+
+        message: $Stream.Readable;
+
+        key?: C.IPairKeyFormat["sign"];
+
+        encoding?: E;
+
+    }): Promise<C.IOutputType[E]> {
+
+        return Enc.convert(U.ecdsaDERToP1363(await super.signStream({
+            message: opts.message,
+            key: opts.key,
+            encoding: "buffer"
+        })), opts.encoding || this.encoding as any);
+    }
+
     public verify<E extends keyof C.IOutputType>(opts: {
 
         message: string | Buffer;
 
         signature: C.IOutputType[E];
 
-        key?: C.IPKeySignKeyFormat["verify"];
+        key?: C.IPairKeyFormat["verify"];
 
         encoding?: E;
 
@@ -96,10 +114,34 @@ extends AbstractPKeySigner<D> {
             key: opts.key
         });
     }
+
+    public verifyStream<E extends keyof C.IOutputType>(opts: {
+
+        message: $Stream.Readable;
+
+        signature: C.IOutputType[E];
+
+        key?: C.IPairKeyFormat["verify"];
+
+        encoding?: E;
+
+    }): Promise<boolean> {
+
+        return super.verifyStream({
+            message: opts.message,
+            signature: U.ecdsaP1363ToDER(Enc.convert(
+                opts.signature as any,
+                "buffer",
+                opts.encoding || this.encoding as any
+            )),
+            encoding: "buffer",
+            key: opts.key
+        });
+    }
 }
 
 export interface IECDSASignerOptions<D extends C.ValidEncoding = "buffer">
-extends C.ISignerOptions<C.IPKeySignKeyFormat, D> {
+extends C.ISignerOptions<C.IPairKeyFormat, D> {
 
     /**
      * The output & input format of signature.
@@ -111,7 +153,7 @@ extends C.ISignerOptions<C.IPKeySignKeyFormat, D> {
 
 export function createECDSASigner<D extends C.ValidEncoding = "buffer">(
     opts: IECDSASignerOptions<D>
-): C.ISigner<C.IPKeySignKeyFormat, D> {
+): C.ISigner<C.IPairKeyFormat, D> {
 
     if (opts.output === "der") {
 

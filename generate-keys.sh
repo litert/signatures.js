@@ -1,5 +1,12 @@
+#!/bin/bash
+
 mkdir test -p
 rm -f test/*.pem
+rm -f test/*.dat
+
+# Random File
+
+dd if=/dev/random of=test/bigfile.dat bs=1M count=20
 
 # RSA
 

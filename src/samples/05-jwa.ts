@@ -367,7 +367,7 @@ for (let i in TESTS) {
 
     const item = TESTS[i];
 
-    let signer: Signs.ISigner<Signs.ISignKeyFormat, "base64url">;
+    let signer: Signs.ISigner<Signs.IKeyFormat, "base64url">;
 
     switch (item.signAlgo) {
     case "ecdsa":

@@ -17,7 +17,7 @@
 // tslint:disable:no-console
 
 import * as Signs from "../lib";
-import * as $FS from "fs";
+import * as $fs from "fs";
 
 const CONTENT = "Hello, how are you?";
 
@@ -27,12 +27,12 @@ for (let a of Signs.listHashAlgorithms()) {
 
         const signer = Signs.createECDSASigner({
             "key": {
-                "private": $FS.readFileSync(`${__dirname}/../test/ec${
+                "private": $fs.readFileSync(`${__dirname}/../test/ec${
                     Signs.HASH_OUTPUT_BITS[a]
                 }-priv.pem`, {
                     encoding: "utf8"
                 }),
-                "public": $FS.readFileSync(`${__dirname}/../test/ec${
+                "public": $fs.readFileSync(`${__dirname}/../test/ec${
                     Signs.HASH_OUTPUT_BITS[a]
                 }-pub.pem`, {
                     encoding: "utf8"
@@ -67,3 +67,54 @@ for (let a of Signs.listHashAlgorithms()) {
         console.error(`Hash algorithm "${a}"(${Signs.HASH_OUTPUT_BITS[a]}-bits) not supported in ECDSA.`);
     }
 }
+
+(async () => {
+
+    for (let a of Signs.listHashAlgorithms()) {
+
+        try {
+
+            const signer = Signs.createECDSASigner({
+                "key": {
+                    "private": $fs.readFileSync(`${__dirname}/../test/ec${
+                        Signs.HASH_OUTPUT_BITS[a]
+                    }-priv.pem`, {
+                        encoding: "utf8"
+                    }),
+                    "public": $fs.readFileSync(`${__dirname}/../test/ec${
+                        Signs.HASH_OUTPUT_BITS[a]
+                    }-pub.pem`, {
+                        encoding: "utf8"
+                    })
+                },
+                "hash": a,
+                "encoding": "base64"
+            });
+
+            const signResult = await signer.signStream({
+                message: $fs.createReadStream(`${__dirname}/../test/bigfile.dat`)
+            });
+
+            const verifyResult = await signer.verifyStream({
+                message: $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
+                signature: signResult
+            });
+
+            console.debug(`[${signer.algorithm.name}][Stream]: Result ${signResult}`);
+
+            if (verifyResult) {
+
+                console.info(`[${signer.algorithm.name}][Stream] Verification matched.`);
+            }
+            else {
+
+                console.error(`[${signer.algorithm.name}][Stream] Verification failed.`);
+            }
+        }
+        catch (e) {
+
+            console.error(`Hash algorithm "${a}"(${Signs.HASH_OUTPUT_BITS[a]}-bits) not supported in ECDSA.`);
+        }
+    }
+
+})();

@@ -17,11 +17,12 @@
 import * as C from "./Common";
 import * as Enc from "@litert/encodings";
 import * as $Crypto from "crypto";
+import * as $Stream from "stream";
 
 class HMACSigner<D extends C.ValidEncoding>
-implements C.ISigner<C.IHMACSignKeyFormat, D> {
+implements C.ISigner<C.IHMACKeyFormat, D> {
 
-    private _key?: C.IHMACSignKeyFormat["construct"];
+    private _key?: C.IHMACKeyFormat["construct"];
 
     private _algo: C.ValidHashAlgoritms;
 
@@ -29,7 +30,7 @@ implements C.ISigner<C.IHMACSignKeyFormat, D> {
 
     public constructor(
         algo: C.ValidHashAlgoritms,
-        key?: C.IHMACSignKeyFormat["construct"],
+        key?: C.IHMACKeyFormat["construct"],
         encoding: C.ValidEncoding = "buffer",
     ) {
 
@@ -38,7 +39,7 @@ implements C.ISigner<C.IHMACSignKeyFormat, D> {
         this._encoding = encoding;
     }
 
-    public get key(): C.IHMACSignKeyFormat["construct"] | undefined {
+    public get key(): C.IHMACKeyFormat["construct"] | undefined {
 
         return this._key;
     }
@@ -61,7 +62,7 @@ implements C.ISigner<C.IHMACSignKeyFormat, D> {
 
         message: string | Buffer;
 
-        key?: C.IHMACSignKeyFormat["sign"];
+        key?: C.IHMACKeyFormat["sign"];
 
         encoding?: E;
 
@@ -77,13 +78,59 @@ implements C.ISigner<C.IHMACSignKeyFormat, D> {
         );
     }
 
+    public signStream<E extends C.ValidEncoding>(opts: {
+
+        message: $Stream.Readable;
+
+        key?: C.IHMACKeyFormat["sign"];
+
+        encoding?: E;
+
+    }): Promise<C.IOutputType[E]> {
+
+        return new Promise<C.IOutputType[E]>((resolve, reject) => {
+
+            try {
+
+                const hmac = $Crypto.createHmac(
+                    this._algo, opts.key ||
+                    this._key as string
+                );
+
+                opts.message.pipe(hmac).on("finish", () => {
+
+                    try {
+
+                        const data = hmac.read();
+
+                        if (data) {
+
+                            resolve(Enc.convert(
+                                data as Buffer,
+                                (opts.encoding || this._encoding) as any
+                            ));
+                        }
+                    }
+                    catch (e) {
+
+                        reject(e);
+                    }
+                });
+            }
+            catch (e) {
+
+                reject(e);
+            }
+        });
+    }
+
     public verify<E extends keyof C.IOutputType>(opts: {
 
         message: string | Buffer;
 
         signature: C.IOutputType[E];
 
-        key?: C.IHMACSignKeyFormat["verify"];
+        key?: C.IHMACKeyFormat["verify"];
 
         encoding?: E;
 
@@ -100,11 +147,35 @@ implements C.ISigner<C.IHMACSignKeyFormat, D> {
             (opts.encoding || this._encoding)
         );
     }
+
+    public async verifyStream<E extends keyof C.IOutputType>(opts: {
+
+        message: $Stream.Readable;
+
+        signature: C.IOutputType[E];
+
+        key?: C.IHMACKeyFormat["verify"];
+
+        encoding?: E;
+
+    }): Promise<boolean> {
+
+        return !Enc.compare(
+            await this.signStream({
+                message: opts.message,
+                key: opts.key,
+                encoding: "buffer"
+            }),
+            opts.signature,
+            "buffer",
+            (opts.encoding || this._encoding)
+        );
+    }
 }
 
 export function createHMACSigner<D extends C.ValidEncoding = "buffer">(
-    opts: C.ISignerOptions<C.IHMACSignKeyFormat, D>
-): C.ISigner<C.IHMACSignKeyFormat, D> {
+    opts: C.ISignerOptions<C.IHMACKeyFormat, D>
+): C.ISigner<C.IHMACKeyFormat, D> {
 
     return new HMACSigner<D>(
         opts.hash,

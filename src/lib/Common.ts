@@ -14,6 +14,8 @@
  *  limitations under the License.
  */
 
+import * as $Stream from "stream";
+
 import { Encodings as ValidEncoding } from "@litert/encodings";
 
 export { ValidEncoding };
@@ -63,7 +65,7 @@ export interface ISignerAlgorithm {
 }
 
 export interface ISigner<
-    K extends ISignKeyFormat,
+    K extends IKeyFormat,
     D extends ValidEncoding = "buffer"
 > {
 
@@ -97,6 +99,24 @@ export interface ISigner<
 
     }): IOutputType[E];
 
+    signStream(opts: {
+
+        message: $Stream.Readable;
+
+        key?: K["sign"];
+
+    }): Promise<IOutputType[D]>;
+
+    signStream<E extends keyof IOutputType>(opts: {
+
+        message: $Stream.Readable;
+
+        key?: K["sign"];
+
+        encoding: E;
+
+    }): Promise<IOutputType[E]>;
+
     verify(opts: {
 
         message: string | Buffer;
@@ -118,6 +138,28 @@ export interface ISigner<
         encoding: E;
 
     }): boolean;
+
+    verifyStream(opts: {
+
+        message: $Stream.Readable;
+
+        signature: IOutputType[D];
+
+        key?: K["verify"];
+
+    }): Promise<boolean>;
+
+    verifyStream<E extends keyof IOutputType>(opts: {
+
+        message: $Stream.Readable;
+
+        signature: IOutputType[E];
+
+        key?: K["verify"];
+
+        encoding: E;
+
+    }): Promise<boolean>;
 }
 
 export type ISecretKey = string | Buffer | {
@@ -129,7 +171,7 @@ export type ISecretKey = string | Buffer | {
 
 export type IKeyPair = Record<"private" | "public", ISecretKey>;
 
-export interface ISignKeyFormat {
+export interface IKeyFormat {
 
     "construct": string | Buffer | IKeyPair;
 
@@ -138,8 +180,8 @@ export interface ISignKeyFormat {
     "verify": string | Buffer | ISecretKey;
 }
 
-export interface IPKeySignKeyFormat
-extends ISignKeyFormat {
+export interface IPairKeyFormat
+extends IKeyFormat {
 
     "construct": IKeyPair;
 
@@ -148,8 +190,8 @@ extends ISignKeyFormat {
     "verify": ISecretKey;
 }
 
-export interface IHMACSignKeyFormat
-extends ISignKeyFormat {
+export interface IHMACKeyFormat
+extends IKeyFormat {
 
     "construct": string | Buffer;
 
@@ -159,7 +201,7 @@ extends ISignKeyFormat {
 }
 
 export interface ISignerOptions<
-    K extends ISignKeyFormat,
+    K extends IKeyFormat,
     D extends ValidEncoding
 > {
     "hash": ValidHashAlgoritms;
