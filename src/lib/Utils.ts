@@ -46,13 +46,13 @@ function _ecdsaRecoverRS(input: Buffer): Buffer {
 }
 
 /**
- * This method helps transform signature from DER format to R|S format.
+ * This method helps transform signature from DER format to P1363 format.
  *
  * @param {Buffer} der  The signature in DER format.
  *
- * @returns {Buffer}  Return the signature in R|S format.
+ * @returns {Buffer}  Return the signature in P1363 format.
  */
-export function ecdsaDER2RS(der: Buffer): Buffer {
+export function ecdsaDERToP1363(der: Buffer): Buffer {
 
     let base = 0;
 
@@ -97,13 +97,13 @@ export function ecdsaDER2RS(der: Buffer): Buffer {
 }
 
 /**
- * This method helps transform signature from DER format to R|S format.
+ * This method helps transform signature from DER format to P1363 format.
  *
- * @param {Buffer} rs   The signature in R|S format.
+ * @param {Buffer} rs   The signature in P1363 format.
  *
  * @returns {Buffer}  Return the signature in DER format.
  */
-export function ecdsaRS2DER(rs: Buffer): Buffer {
+export function ecdsaP1363ToDER(rs: Buffer): Buffer {
 
     let base = 0;
 

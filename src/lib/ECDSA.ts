@@ -19,7 +19,7 @@ import * as C from "./Common";
 import * as Enc from "@litert/encodings";
 import * as U from "./Utils";
 
-export type ECDSAOutput = "der" | "rs";
+export type ECDSAOutput = "der" | "p1363";
 
 class ECDSASignerDER<D extends C.ValidEncoding>
  extends AbstractPKeySigner<D> {
@@ -66,7 +66,7 @@ extends AbstractPKeySigner<D> {
 
     }): C.IOutputType[E] {
 
-        return Enc.convert(U.ecdsaDER2RS(super.sign({
+        return Enc.convert(U.ecdsaDERToP1363(super.sign({
             message: opts.message,
             key: opts.key,
             encoding: "buffer"
@@ -87,7 +87,7 @@ extends AbstractPKeySigner<D> {
 
         return super.verify({
             message: opts.message,
-            signature: U.ecdsaRS2DER(Enc.convert(
+            signature: U.ecdsaP1363ToDER(Enc.convert(
                 opts.signature as any,
                 "buffer",
                 opts.encoding || this.encoding as any
@@ -104,7 +104,7 @@ extends C.ISignerOptions<C.IPKeySignKeyFormat, D> {
     /**
      * The output & input format of signature.
      *
-     * @default "rs"
+     * @default "p1363"
      */
     "output"?: ECDSAOutput;
 }
