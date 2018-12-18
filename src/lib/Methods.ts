@@ -17,11 +17,17 @@
 import * as C from "./Common";
 import * as I from "./Internal";
 
+/**
+ * List all supported hash algorithms.
+ */
 export function listHashAlgorithms(): C.ValidHashAlgoritms[] {
 
     return I.HASH_ALGORITHMS.slice();
 }
 
+/**
+ * List all supported sign algorithms.
+ */
 export function listSignAlgorithms(): C.ValidSignAlgorithms[] {
 
     return I.SIGN_ALGORITHMS.slice();

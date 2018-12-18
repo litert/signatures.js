@@ -34,7 +34,7 @@
   "types": "./lib/index.d.ts",
   "typings": "./lib/index.d.ts",
   "dependencies": {
-    "@litert/encodings": "^1.0.0"
+    "@litert/encodings": "^1.1.1"
   },
   "devDependencies": {
     "@types/node": "^10.12.2",

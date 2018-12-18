@@ -41,7 +41,7 @@ for (let a of Signs.listHashAlgorithms()) {
             "public": PUB_KEY
         },
         "hash": a,
-        "encoding": "base64",
+        "encoding": "urlencode",
         "padding": "pss-mgf1"
     });
 
@@ -89,7 +89,7 @@ for (let a of Signs.listHashAlgorithms()) {
                 "public": PUB_KEY
             },
             "hash": a,
-            "encoding": "base64",
+            "encoding": "base62x",
             "padding": "pss-mgf1"
         });
 

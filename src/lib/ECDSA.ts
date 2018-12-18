@@ -67,11 +67,15 @@ extends AbstractPKeySigner<D> {
 
     }): C.IOutputType[E] {
 
-        return Enc.convert(U.ecdsaDERToP1363(super.sign({
-            message: opts.message,
-            key: opts.key,
-            encoding: "buffer"
-        })), opts.encoding || this.encoding as any);
+        return Enc.convert(
+            U.ecdsaDERToP1363(super.sign({
+                message: opts.message,
+                key: opts.key,
+                encoding: "buffer"
+            })),
+            opts.encoding || this.encoding as any,
+            "buffer"
+        );
     }
 
     public async signStream<E extends C.ValidEncoding>(opts: {
@@ -84,11 +88,15 @@ extends AbstractPKeySigner<D> {
 
     }): Promise<C.IOutputType[E]> {
 
-        return Enc.convert(U.ecdsaDERToP1363(await super.signStream({
-            message: opts.message,
-            key: opts.key,
-            encoding: "buffer"
-        })), opts.encoding || this.encoding as any);
+        return Enc.convert(U.ecdsaDERToP1363(
+            await super.signStream({
+                message: opts.message,
+                key: opts.key,
+                encoding: "buffer"
+            })),
+            opts.encoding || this.encoding as any,
+            "buffer"
+        );
     }
 
     public verify<E extends keyof C.IOutputType>(opts: {
@@ -151,6 +159,11 @@ extends C.ISignerOptions<C.IPairKeyFormat, D> {
     "output"?: ECDSAOutput;
 }
 
+/**
+ * Create an ECDSA signer object.
+ *
+ * @param opts The options of signer.
+ */
 export function createECDSASigner<D extends C.ValidEncoding = "buffer">(
     opts: IECDSASignerOptions<D>
 ): C.ISigner<C.IPairKeyFormat, D> {

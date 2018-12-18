@@ -21,7 +21,7 @@ export const Errors = C.createErrorHub();
 export const E_HASH_ALGO_INVALID = Errors.define(
     null,
     "E_HASH_ALGO_INVALID",
-    "The selected hash algorithm is not supported BY current sign algorithm."
+    "The selected hash algorithm is not supported by current sign algorithm."
 );
 
 export const E_SIGN_ALGO_INVALID = Errors.define(

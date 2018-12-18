@@ -19,6 +19,7 @@ import * as I from "./Internal";
 import * as Enc from "@litert/encodings";
 import * as $Crypto from "crypto";
 import * as $Stream from "stream";
+import * as Errors from "./Errors";
 
 export abstract class AbstractPKeySigner<D extends C.ValidEncoding>
 implements C.ISigner<C.IPairKeyFormat, D> {
@@ -99,22 +100,39 @@ implements C.ISigner<C.IPairKeyFormat, D> {
 
     }): C.IOutputType[E] {
 
-        const hasher = $Crypto.createSign(this._algo);
+        try {
 
-        hasher.update(opts.message);
-        hasher.end();
+            const hasher = $Crypto.createSign(this._algo);
 
-        return Enc.convert(
-            hasher.sign(
-                (opts.key && I.wrapKey(
-                    opts.key,
-                    this._padding,
-                    this._saltLength
-                )) || (this._key && this._privKey) as any
-            ),
-            (opts.encoding || this._encoding) as any,
-            "buffer"
-        );
+            hasher.update(opts.message);
+            hasher.end();
+
+            return Enc.convert(
+                hasher.sign(
+                    (opts.key && I.wrapKey(
+                        opts.key,
+                        this._padding,
+                        this._saltLength
+                    )) || (this._key && this._privKey) as any
+                ),
+                (opts.encoding || this._encoding) as any,
+                "buffer"
+            );
+        }
+        catch (e) {
+
+            if (e.message && e.message.includes("invalid digest type")) {
+
+                throw new Errors.E_HASH_ALGO_INVALID({
+                    "metadata": {
+                        "sign": this._signAlgo,
+                        "hash": this._algo
+                    }
+                });
+            }
+
+            throw e;
+        }
     }
 
     public signStream<E extends C.ValidEncoding>(opts: {
@@ -151,6 +169,16 @@ implements C.ISigner<C.IPairKeyFormat, D> {
                 }
                 catch (e) {
 
+                    if (e.message && e.message.includes("invalid digest type")) {
+
+                        return reject(new Errors.E_HASH_ALGO_INVALID({
+                            "metadata": {
+                                "sign": this._signAlgo,
+                                "hash": this._algo
+                            }
+                        }));
+                    }
+
                     return reject(e);
                 }
 
@@ -171,24 +199,41 @@ implements C.ISigner<C.IPairKeyFormat, D> {
 
     }): boolean {
 
-        const hasher = $Crypto.createVerify(this._algo);
+        try {
 
-        hasher.update(opts.message);
+            const hasher = $Crypto.createVerify(this._algo);
 
-        hasher.end();
+            hasher.update(opts.message);
 
-        return hasher.verify(
-            (opts.key && I.wrapKey(
-                opts.key,
-                this._padding,
-                this._saltLength
-            )) || (this._key && this._pubKey) as any,
-            Enc.convert(
-                opts.signature as any,
-                "buffer",
-                opts.encoding || this._encoding as any
-            )
-        );
+            hasher.end();
+
+            return hasher.verify(
+                (opts.key && I.wrapKey(
+                    opts.key,
+                    this._padding,
+                    this._saltLength
+                )) || (this._key && this._pubKey) as any,
+                Enc.convert(
+                    opts.signature as any,
+                    "buffer",
+                    opts.encoding || this._encoding as any
+                )
+            );
+        }
+        catch (e) {
+
+            if (e.message && e.message.includes("invalid digest type")) {
+
+                throw new Errors.E_HASH_ALGO_INVALID({
+                    "metadata": {
+                        "sign": this._signAlgo,
+                        "hash": this._algo
+                    }
+                });
+            }
+
+            throw e;
+        }
     }
 
     public verifyStream<E extends keyof C.IOutputType>(opts: {
@@ -227,6 +272,16 @@ implements C.ISigner<C.IPairKeyFormat, D> {
                     );
                 }
                 catch (e) {
+
+                    if (e.message && e.message.includes("invalid digest type")) {
+
+                        return reject(new Errors.E_HASH_ALGO_INVALID({
+                            "metadata": {
+                                "sign": this._signAlgo,
+                                "hash": this._algo
+                            }
+                        }));
+                    }
 
                     return reject(e);
                 }

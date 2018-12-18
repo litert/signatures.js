@@ -62,6 +62,11 @@ extends C.ISignerOptions<
     "padding"?: RSAPaddingType;
 }
 
+/**
+ * Create a RSA signer object.
+ *
+ * @param opts The options of signer.
+ */
 export function createRSASigner<D extends C.ValidEncoding = "buffer">(
     opts: IRSASignerOptions<D>
 ): C.ISigner<C.IPairKeyFormat, D> {

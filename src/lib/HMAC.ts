@@ -74,7 +74,8 @@ implements C.ISigner<C.IHMACKeyFormat, D> {
 
         return Enc.convert(
             hasher.digest(),
-            (opts.encoding || this._encoding) as any
+            (opts.encoding || this._encoding) as any,
+            "buffer"
         );
     }
 
@@ -107,7 +108,8 @@ implements C.ISigner<C.IHMACKeyFormat, D> {
 
                             resolve(Enc.convert(
                                 data as Buffer,
-                                (opts.encoding || this._encoding) as any
+                                (opts.encoding || this._encoding) as any,
+                                "buffer"
                             ));
                         }
                     }
@@ -173,6 +175,11 @@ implements C.ISigner<C.IHMACKeyFormat, D> {
     }
 }
 
+/**
+ * Create a HMAC signer object.
+ *
+ * @param opts The options of signer.
+ */
 export function createHMACSigner<D extends C.ValidEncoding = "buffer">(
     opts: C.ISignerOptions<C.IHMACKeyFormat, D>
 ): C.ISigner<C.IHMACKeyFormat, D> {

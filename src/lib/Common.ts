@@ -53,6 +53,10 @@ extends Record<ValidEncoding, string | Buffer> {
     "base64url": string;
 
     "utf8": string;
+
+    "base62x": string;
+
+    "urlencode": string;
 }
 
 export interface ISignerAlgorithm {
