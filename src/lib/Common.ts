@@ -1,5 +1,5 @@
 /**
- *  Copyright 2018 Angus.Fenying <fenying@litert.org>
+ *  Copyright 2019 Angus.Fenying <fenying@litert.org>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,9 +16,7 @@
 
 import * as $Stream from "stream";
 
-import { Encodings as ValidEncoding } from "@litert/encodings";
-
-export { ValidEncoding };
+export type ValidEncoding = "base64" | "base64url" | "hex" | "buffer";
 
 export type ValidHashAlgoritms = "ripemd160" | "sha1" | "sha224" | "sha256" |
                                  "sha384" | "sha512" | "whirlpool" |
@@ -51,12 +49,6 @@ extends Record<ValidEncoding, string | Buffer> {
     "base64": string;
 
     "base64url": string;
-
-    "utf8": string;
-
-    "base62x": string;
-
-    "urlencode": string;
 }
 
 export interface ISignerAlgorithm {

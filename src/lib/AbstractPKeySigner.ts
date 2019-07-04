@@ -1,5 +1,5 @@
 /**
- *  Copyright 2018 Angus.Fenying <fenying@litert.org>
+ *  Copyright 2019 Angus.Fenying <fenying@litert.org>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 import * as C from "./Common";
 import * as I from "./Internal";
-import * as Enc from "@litert/encodings";
+import * as Enc from "./Encodings";
 import * as $Crypto from "crypto";
 import * as $Stream from "stream";
 import * as Errors from "./Errors";

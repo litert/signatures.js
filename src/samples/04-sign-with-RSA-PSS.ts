@@ -1,5 +1,5 @@
 /**
- *  Copyright 2018 Angus.Fenying <fenying@litert.org>
+ *  Copyright 2019 Angus.Fenying <fenying@litert.org>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ for (let a of Signs.listHashAlgorithms()) {
             "public": PUB_KEY
         },
         "hash": a,
-        "encoding": "urlencode",
+        "encoding": "base64",
         "padding": "pss-mgf1"
     });
 
@@ -89,7 +89,7 @@ for (let a of Signs.listHashAlgorithms()) {
                 "public": PUB_KEY
             },
             "hash": a,
-            "encoding": "base62x",
+            "encoding": "base64",
             "padding": "pss-mgf1"
         });
 

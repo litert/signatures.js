@@ -1,5 +1,5 @@
 /**
- *  Copyright 2018 Angus.Fenying <fenying@litert.org>
+ *  Copyright 2019 Angus.Fenying <fenying@litert.org>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -439,11 +439,7 @@ for (let i in TESTS) {
 
         console.error(`[${item.name}]: Result       ${signResult}`);
 
-        console.error(Enc.convert(
-            item.signature,
-            "buffer",
-            "base64url"
-        ).toJSON().data.length);
+        console.error(Enc.bufferFromBase64Url(item.signature).toJSON().data.length);
 
         console.error(`[${item.name}]: Expectation  ${item.signature}`);
     }
