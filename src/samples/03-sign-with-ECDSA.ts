@@ -19,101 +19,119 @@
 import * as Signs from "../lib";
 import * as $fs from "fs";
 
+const PRI_KEY = $fs.readFileSync(`${__dirname}/../test/rsa-priv.pem`, {
+    encoding: "utf8"
+});
+
+const PUB_KEY = $fs.readFileSync(`${__dirname}/../test/rsa-pub.pem`, {
+    encoding: "utf8"
+});
+
+const FAKE_PUB_KEY = $fs.readFileSync(`${__dirname}/../test/rsa-wrong-pub.pem`, {
+    encoding: "utf8"
+});
+
 const CONTENT = "Hello, how are you?";
 
-for (let a of Signs.listHashAlgorithms()) {
+for (let a of Signs.RSA.getSupportedAlgorithms()) {
+
+    const signer = Signs.RSA.createSigner(
+        a,
+        PUB_KEY,
+        PRI_KEY,
+        Signs.ERSAPadding.PSS_MGF1,
+        "base64"
+    );
+
+    const fakeSigner = Signs.RSA.createSigner(
+        a,
+        FAKE_PUB_KEY,
+        PRI_KEY,
+        Signs.ERSAPadding.PSS_MGF1,
+        "base64"
+    );
 
     try {
 
-        const signer = Signs.createECDSASigner({
-            "key": {
-                "private": $fs.readFileSync(`${__dirname}/../test/ec${
-                    Signs.HASH_OUTPUT_BITS[a]
-                }-priv.pem`, {
-                    encoding: "utf8"
-                }),
-                "public": $fs.readFileSync(`${__dirname}/../test/ec${
-                    Signs.HASH_OUTPUT_BITS[a]
-                }-pub.pem`, {
-                    encoding: "utf8"
-                })
-            },
-            "hash": a,
-            "encoding": "base64"
-        });
+        const signResult = signer.sign(CONTENT);
 
-        const signResult = signer.sign({
-            message: CONTENT
-        });
+        const verifyResult = signer.verify(
+            CONTENT,
+            signResult
+        ) && !fakeSigner.verify(CONTENT, signResult) &&
+        Signs.RSA.verify(a, CONTENT, Buffer.from(signResult, "base64"), PUB_KEY);
 
-        const verifyResult = signer.verify({
-            message: CONTENT,
-            signature: signResult
-        });
-
-        console.debug(`[${signer.algorithm.name}]: Result ${signResult}`);
+        console.debug(`[${signer.hashAlgorithm}]: Result ${signResult}`);
 
         if (verifyResult) {
 
-            console.info(`[${signer.algorithm.name}] Verification matched.`);
+            console.info(`[${signer.hashAlgorithm}] Verification matched.`);
         }
         else {
 
-            console.error(`[${signer.algorithm.name}] Verification failed.`);
+            console.error(`[${signer.hashAlgorithm}] Verification failed.`);
         }
     }
     catch (e) {
 
-        console.error(`Hash algorithm "${a}"(${Signs.HASH_OUTPUT_BITS[a]}-bits) not supported in ECDSA.`);
+        console.error(`[${signer.hashAlgorithm}] Not supported with RSASSA-PKCS1-v1.5.`);
     }
 }
 
 (async () => {
 
-    for (let a of Signs.listHashAlgorithms()) {
+    for (let a of Signs.RSA.getSupportedAlgorithms()) {
+
+        const signer = Signs.RSA.createSigner(
+            a,
+            PUB_KEY,
+            PRI_KEY,
+            Signs.ERSAPadding.PSS_MGF1,
+            "base64"
+        );
+
+        const fakeSigner = Signs.RSA.createSigner(
+            a,
+            FAKE_PUB_KEY,
+            PRI_KEY,
+            Signs.ERSAPadding.PSS_MGF1,
+            "base64"
+        );
 
         try {
 
-            const signer = Signs.createECDSASigner({
-                "key": {
-                    "private": $fs.readFileSync(`${__dirname}/../test/ec${
-                        Signs.HASH_OUTPUT_BITS[a]
-                    }-priv.pem`, {
-                        encoding: "utf8"
-                    }),
-                    "public": $fs.readFileSync(`${__dirname}/../test/ec${
-                        Signs.HASH_OUTPUT_BITS[a]
-                    }-pub.pem`, {
-                        encoding: "utf8"
-                    })
-                },
-                "hash": a,
-                "encoding": "base64"
-            });
+            const signResult = await signer.sign(
+                $fs.createReadStream(`${__dirname}/../test/bigfile.dat`)
+            );
 
-            const signResult = await signer.signStream({
-                message: $fs.createReadStream(`${__dirname}/../test/bigfile.dat`)
-            });
+            const verifyResult = (await signer.verify(
+                $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
+                signResult
+            )) && (!await fakeSigner.verify(
+                $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
+                signResult
+            )) &&
+            (await Signs.RSA.verify(
+                a,
+                $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
+                Buffer.from(signResult, "base64"),
+                PUB_KEY
+            ));
 
-            const verifyResult = await signer.verifyStream({
-                message: $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
-                signature: signResult
-            });
-
-            console.debug(`[${signer.algorithm.name}][Stream]: Result ${signResult}`);
+            console.debug(`[${signer.hashAlgorithm}][Stream]: Result ${signResult}`);
 
             if (verifyResult) {
 
-                console.info(`[${signer.algorithm.name}][Stream] Verification matched.`);
+                console.info(`[${signer.hashAlgorithm}][Stream] Verification matched.`);
             }
             else {
 
-                console.error(`[${signer.algorithm.name}][Stream] Verification failed.`);
+                console.error(`[${signer.hashAlgorithm}][Stream] Verification failed.`);
             }
         }
         catch (e) {
 
-            console.error(`Hash algorithm "${a}"(${Signs.HASH_OUTPUT_BITS[a]}-bits) not supported in ECDSA.`);
+            console.error(`[${signer.hashAlgorithm}][Stream] Not supported with RSASSA-PKCS1-v1.5.`);
         }
     }
 

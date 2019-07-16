@@ -89,11 +89,14 @@ interface ITestItem {
 
     "name": string;
 
-    "key": Signs.IKeyPair | string | Buffer;
+    "key": string | Buffer | {
+        "private": Signs.IAsymmetricKey | string | Buffer,
+        "public": string | Buffer
+    };
 
-    "hashAlgo": Signs.ValidHashAlgoritms;
+    "hashAlgo": string;
 
-    "signAlgo": Signs.ValidSignAlgorithms;
+    "signAlgo": string;
 
     "header": any;
 
@@ -367,48 +370,53 @@ for (let i in TESTS) {
 
     const item = TESTS[i];
 
-    let signer: Signs.ISigner<Signs.IKeyFormat, "base64url">;
+    let signer: Signs.ISigner<"base64url">;
 
     switch (item.signAlgo) {
     case "ecdsa":
 
-        signer = Signs.createECDSASigner({
-            "key": item.key as any,
-            "hash": item.hashAlgo,
-            "encoding": "base64url"
-        });
+        signer = Signs.ECDSA.createSigner(
+            item.hashAlgo as any,
+            (item.key as any).public,
+            (item.key as any).private,
+            Signs.EECDSAFormat.IEEE_P1363,
+            "base64url"
+        );
 
         break;
 
     default:
     case "hmac":
 
-        signer = Signs.createHMACSigner({
-            "key": item.key as any,
-            "hash": item.hashAlgo,
-            "encoding": "base64url"
-        });
+        signer = Signs.HMAC.createSigner(
+            item.hashAlgo as any,
+            item.key as any,
+            "base64url"
+        );
 
         break;
 
     case "rsassa-pkcs1-v1_5":
 
-        signer = Signs.createRSASigner({
-            "key": item.key as any,
-            "hash": item.hashAlgo,
-            "encoding": "base64url"
-        });
+        signer = Signs.RSA.createSigner(
+            item.hashAlgo as any,
+            (item.key as any).public,
+            (item.key as any).private,
+            Signs.ERSAPadding.PKCS1_V1_5,
+            "base64url"
+        );
 
         break;
 
     case "rsassa-pss":
 
-        signer = Signs.createRSASigner({
-            "key": item.key as any,
-            "hash": item.hashAlgo,
-            "encoding": "base64url",
-            "padding": "pss-mgf1"
-        });
+        signer = Signs.RSA.createSigner(
+            item.hashAlgo as any,
+            (item.key as any).public,
+            (item.key as any).private,
+            Signs.ERSAPadding.PSS_MGF1,
+            "base64url"
+        );
 
         break;
     }
@@ -420,14 +428,12 @@ for (let i in TESTS) {
         (x) => Enc.base64UrlEncode(Buffer.from(JSON.stringify(x)).toString("base64"))
     ).join(".");
 
-    const signResult = Enc.base64UrlEncode(signer.sign({
-        message: CONTENT
-    }));
+    const signResult = Enc.base64UrlEncode(signer.sign(CONTENT));
 
-    const verifyResult = signer.verify({
-        message: CONTENT,
-        signature: item.signature
-    });
+    const verifyResult = signer.verify(
+        CONTENT,
+        item.signature
+    );
 
     if (verifyResult) {
 

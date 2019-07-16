@@ -25,69 +25,88 @@ const FAKE_KEY = "world hello!";
 
 const CONTENT = "Hello, how are you?";
 
-for (let a of Signs.listHashAlgorithms()) {
+for (let a of Signs.HMAC.getSupportedAlgorithms()) {
 
-    const signer = Signs.createHMACSigner({
-        hash: a,
-        encoding: "base64"
-    });
+    const signer = Signs.HMAC.createSigner(
+        a,
+        KEY,
+        "base64"
+    );
 
-    const result = signer.sign({
-        message: CONTENT,
-        key: KEY
-    });
+    const fakeSigner = Signs.HMAC.createSigner(
+        a,
+        FAKE_KEY,
+        "base64"
+    );
 
-    console.debug(`[${signer.algorithm.name}]: Result = ${result}`);
+    const result = signer.sign(CONTENT);
 
-    if (signer.verify({
-        message: CONTENT,
-        signature: result,
-        key: KEY
-    }) && !signer.verify({
-        message: CONTENT,
-        signature: result,
-        key: FAKE_KEY
-    })) {
+    console.debug(`[${signer.hashAlgorithm}]: Result = ${result}`);
 
-        console.info(`[${signer.algorithm.name}] Verification matched.`);
+    if (
+        signer.verify(CONTENT, result) &&
+        !fakeSigner.verify(CONTENT, result) &&
+        Signs.HMAC.sign(a, CONTENT, KEY).toString("base64") === result &&
+        Signs.HMAC.verify(a, CONTENT, Buffer.from(result, "base64"), KEY)
+    ) {
+
+        console.info(`[${signer.hashAlgorithm}] Verification matched.`);
     }
     else {
 
-        console.error(`[${signer.algorithm.name}] Verification failed.`);
+        console.error(`[${signer.hashAlgorithm}] Verification failed.`);
     }
 }
 
 (async () => {
 
-    for (let a of Signs.listHashAlgorithms()) {
+    for (let a of Signs.HMAC.getSupportedAlgorithms()) {
 
-        const signer = Signs.createHMACSigner({
-            hash: a,
-            encoding: "base64"
-        });
+        const signer = Signs.HMAC.createSigner(
+            a,
+            KEY,
+            "base64"
+        );
 
-        const result = await signer.signStream({
-            message: $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
-            key: KEY
-        });
+        const fakeSigner = Signs.HMAC.createSigner(
+            a,
+            FAKE_KEY,
+            "base64"
+        );
 
-        console.debug(`[${signer.algorithm.name}][Stream]: Result = ${result}`);
+        const result = await signer.sign(
+            $fs.createReadStream(`${__dirname}/../test/bigfile.dat`)
+        );
 
-        if ((await signer.verifyStream({
-            message: $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
-            signature: result,
-            key: KEY
-        })) && !(await signer.verifyStream({
-            message: $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
-            signature: result,
-            key: FAKE_KEY
-        }))) {
+        console.debug(`[${signer.hashAlgorithm}][Stream]: Result = ${result}`);
 
-            console.info(`[${signer.algorithm.name}][Stream] Verification matched.`);
+        if (
+            (await signer.verify(
+                $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
+                result
+            )) &&
+            (!await fakeSigner.verify(
+                $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
+                result
+            )) &&
+            (await Signs.HMAC.verify(
+                a,
+                $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
+                Buffer.from(result, "base64"),
+                KEY
+            )) &&
+            ((await Signs.HMAC.sign(
+                a,
+                $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
+                KEY
+            )).toString("base64") === result)
+        ) {
+
+            console.info(`[${signer.hashAlgorithm}][Stream] Verification matched.`);
         }
         else {
 
-            console.error(`[${signer.algorithm.name}][Stream] Verification failed.`);
+            console.error(`[${signer.hashAlgorithm}][Stream] Verification failed.`);
         }
     }
 })();

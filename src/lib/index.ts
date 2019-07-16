@@ -15,9 +15,8 @@
  */
 
 export * from "./Common";
-export * from "./HMAC";
-export * from "./ECDSA";
-export * from "./RSA";
-export * from "./Errors";
-export * from "./Utils";
-export * from "./Methods";
+import * as HMAC from "./Signers/HMAC";
+import * as RSA from "./Signers/RSA";
+import * as ECDSA from "./Signers/ECDSA";
+
+export { HMAC, RSA, ECDSA };
