@@ -328,10 +328,18 @@ export function createSigner<T extends C.TSignature = "buffer">(
 
                 if (result instanceof Promise) {
 
-                    return result.then((x) => ${I._getEncoderName(output as string, "Enc", "x")})
+                    return result.then((x) => ${
+                        format !== C.EECDSAFormat.DER ?
+                        I._getEncoderName(output as string, "Enc", "derToP1363(x)") :
+                        I._getEncoderName(output as string, "Enc", "x")
+                    })
                 }
 
-                return ${I._getEncoderName(output as string, "Enc", "result")};
+                return ${
+                    format !== C.EECDSAFormat.DER ?
+                        I._getEncoderName(output as string, "Enc", "derToP1363(result)") :
+                        I._getEncoderName(output as string, "Enc", "result")
+                };
             },
             verify(data, signature) {
 

@@ -18,121 +18,159 @@
 
 import * as Signs from "../lib";
 import * as $fs from "fs";
-
-const PRI_KEY = $fs.readFileSync(`${__dirname}/../test/rsa-priv.pem`, {
-    encoding: "utf8"
-});
-
-const PUB_KEY = $fs.readFileSync(`${__dirname}/../test/rsa-pub.pem`, {
-    encoding: "utf8"
-});
-
-const FAKE_PUB_KEY = $fs.readFileSync(`${__dirname}/../test/rsa-wrong-pub.pem`, {
-    encoding: "utf8"
-});
+import { printable } from "./utils";
 
 const CONTENT = "Hello, how are you?";
 
-for (let a of Signs.RSA.getSupportedAlgorithms()) {
+const ENCODINGS: Signs.TSignature[] = ["base64", "buffer", "hex", "base64url"];
 
-    const signer = Signs.RSA.createSigner(
-        a,
-        PUB_KEY,
-        PRI_KEY,
-        Signs.ERSAPadding.PSS_MGF1,
-        "base64"
-    );
+for (const ENC of ENCODINGS) {
 
-    const fakeSigner = Signs.RSA.createSigner(
-        a,
-        FAKE_PUB_KEY,
-        PRI_KEY,
-        Signs.ERSAPadding.PSS_MGF1,
-        "base64"
-    );
+    for (let a of Signs.ECDSA.getSupportedAlgorithms()) {
 
-    try {
+        const PRI_KEY = $fs.readFileSync(
+            `${__dirname}/../test/ec${Signs.HASH_OUTPUT_BITS[a]}-priv.pem`,
+            { encoding: "utf8" }
+        );
 
-        const signResult = signer.sign(CONTENT);
+        const PUB_KEY = $fs.readFileSync(
+            `${__dirname}/../test/ec${Signs.HASH_OUTPUT_BITS[a]}-pub.pem`,
+            { encoding: "utf8" }
+        );
 
-        const verifyResult = signer.verify(
-            CONTENT,
-            signResult
-        ) && !fakeSigner.verify(CONTENT, signResult) &&
-        Signs.RSA.verify(a, CONTENT, Buffer.from(signResult, "base64"), PUB_KEY);
+        const FAKE_PUB_KEY = $fs.readFileSync(
+            `${__dirname}/../test/ec${Signs.HASH_OUTPUT_BITS[a]}-wrong-pub.pem`,
+            { encoding: "utf8" }
+        );
 
-        console.debug(`[${signer.hashAlgorithm}]: Result ${signResult}`);
+        const signer = Signs.ECDSA.createSigner(
+            a,
+            PUB_KEY,
+            PRI_KEY,
+            Signs.EECDSAFormat.IEEE_P1363,
+            ENC
+        );
 
-        if (verifyResult) {
+        const fakeSigner = Signs.ECDSA.createSigner(
+            a,
+            FAKE_PUB_KEY,
+            PRI_KEY,
+            Signs.EECDSAFormat.IEEE_P1363,
+            ENC
+        );
 
-            console.info(`[${signer.hashAlgorithm}] Verification matched.`);
+        try {
+
+            const signResult = signer.sign(CONTENT);
+
+            const verifyResult = signer.verify(
+                CONTENT,
+                signResult
+            ) && !fakeSigner.verify(CONTENT, signResult) &&
+            Signs.ECDSA.verify(
+                a,
+                CONTENT,
+                Signs.ECDSA.sign(a, CONTENT, { key: PRI_KEY, password: "" }),
+                PUB_KEY
+            );
+
+            console.debug(`[${ENC}][${signer.hashAlgorithm}]: Result ${printable(signResult)}`);
+
+            if (verifyResult) {
+
+                console.info(`[${ENC}][${signer.hashAlgorithm}] Verification matched.`);
+            }
+            else {
+
+                console.error(`[${ENC}][${signer.hashAlgorithm}] Verification failed.`);
+            }
         }
-        else {
+        catch (e) {
 
-            console.error(`[${signer.hashAlgorithm}] Verification failed.`);
+            console.error(`[${ENC}][${signer.hashAlgorithm}] Not supported with RSASSA-PKCS1-v1.5.`);
         }
-    }
-    catch (e) {
-
-        console.error(`[${signer.hashAlgorithm}] Not supported with RSASSA-PKCS1-v1.5.`);
     }
 }
 
 (async () => {
 
-    for (let a of Signs.RSA.getSupportedAlgorithms()) {
+    for (const ENC of ENCODINGS) {
 
-        const signer = Signs.RSA.createSigner(
-            a,
-            PUB_KEY,
-            PRI_KEY,
-            Signs.ERSAPadding.PSS_MGF1,
-            "base64"
-        );
+        for (let a of Signs.ECDSA.getSupportedAlgorithms()) {
 
-        const fakeSigner = Signs.RSA.createSigner(
-            a,
-            FAKE_PUB_KEY,
-            PRI_KEY,
-            Signs.ERSAPadding.PSS_MGF1,
-            "base64"
-        );
-
-        try {
-
-            const signResult = await signer.sign(
-                $fs.createReadStream(`${__dirname}/../test/bigfile.dat`)
+            const PRI_KEY = $fs.readFileSync(
+                `${__dirname}/../test/ec${Signs.HASH_OUTPUT_BITS[a]}-priv.pem`,
+                { encoding: "utf8" }
             );
 
-            const verifyResult = (await signer.verify(
-                $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
-                signResult
-            )) && (!await fakeSigner.verify(
-                $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
-                signResult
-            )) &&
-            (await Signs.RSA.verify(
+            const PUB_KEY = $fs.readFileSync(
+                `${__dirname}/../test/ec${Signs.HASH_OUTPUT_BITS[a]}-pub.pem`,
+                { encoding: "utf8" }
+            );
+
+            const FAKE_PUB_KEY = $fs.readFileSync(
+                `${__dirname}/../test/ec${Signs.HASH_OUTPUT_BITS[a]}-wrong-pub.pem`,
+                { encoding: "utf8" }
+            );
+
+            const signer = Signs.ECDSA.createSigner(
                 a,
-                $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
-                Buffer.from(signResult, "base64"),
-                PUB_KEY
-            ));
+                PUB_KEY,
+                PRI_KEY,
+                Signs.EECDSAFormat.IEEE_P1363,
+                ENC
+            );
 
-            console.debug(`[${signer.hashAlgorithm}][Stream]: Result ${signResult}`);
+            const fakeSigner = Signs.ECDSA.createSigner(
+                a,
+                FAKE_PUB_KEY,
+                PRI_KEY,
+                Signs.EECDSAFormat.IEEE_P1363,
+                ENC
+            );
 
-            if (verifyResult) {
+            try {
 
-                console.info(`[${signer.hashAlgorithm}][Stream] Verification matched.`);
+                const signResult = await signer.sign(
+                    $fs.createReadStream(`${__dirname}/../test/bigfile.dat`)
+                );
+
+                const verifyResult = (await signer.verify(
+                    $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
+                    signResult
+                )) && (!await fakeSigner.verify(
+                    $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
+                    signResult
+                )) &&
+                (await Signs.ECDSA.verify(
+                    a,
+                    $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
+                    await Signs.ECDSA.sign(
+                        a,
+                        $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
+                        {
+                            key: PRI_KEY,
+                            password: ""
+                        }
+                    ),
+                    PUB_KEY
+                ));
+
+                console.debug(`[${ENC}][${signer.hashAlgorithm}][Stream]: Result ${printable(signResult)}`);
+
+                if (verifyResult) {
+
+                    console.info(`[${ENC}][${signer.hashAlgorithm}][Stream] Verification matched.`);
+                }
+                else {
+
+                    console.error(`[${ENC}][${signer.hashAlgorithm}][Stream] Verification failed.`);
+                }
             }
-            else {
+            catch (e) {
 
-                console.error(`[${signer.hashAlgorithm}][Stream] Verification failed.`);
+                console.error(`[${ENC}][${signer.hashAlgorithm}][Stream] Not supported with RSASSA-PKCS1-v1.5.`);
             }
-        }
-        catch (e) {
-
-            console.error(`[${signer.hashAlgorithm}][Stream] Not supported with RSASSA-PKCS1-v1.5.`);
         }
     }
-
 })();

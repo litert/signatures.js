@@ -1,6 +1,6 @@
 {
   "name": "@litert/signatures",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "A signatures library based on Node.js crypto module.",
   "main": "./lib/index.js",
   "scripts": {

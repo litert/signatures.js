@@ -1,5 +1,9 @@
 # Changes Logs
 
+## v2.0.1
+
+- Fixed the P1363 output of ECDSA.
+
 ## v2.0.0
 
 - Refactored and simpilified the APIs.

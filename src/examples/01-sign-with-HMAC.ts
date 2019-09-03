@@ -18,6 +18,7 @@
 
 import * as Signs from "../lib";
 import * as $fs from "fs";
+import { printable } from "./utils";
 
 const KEY = "hello world!";
 
@@ -25,88 +26,94 @@ const FAKE_KEY = "world hello!";
 
 const CONTENT = "Hello, how are you?";
 
-for (let a of Signs.HMAC.getSupportedAlgorithms()) {
+const ENCODINGS: Signs.TSignature[] = ["base64", "buffer", "hex", "base64url"];
 
-    const signer = Signs.HMAC.createSigner(
-        a,
-        KEY,
-        "base64"
-    );
-
-    const fakeSigner = Signs.HMAC.createSigner(
-        a,
-        FAKE_KEY,
-        "base64"
-    );
-
-    const result = signer.sign(CONTENT);
-
-    console.debug(`[${signer.hashAlgorithm}]: Result = ${result}`);
-
-    if (
-        signer.verify(CONTENT, result) &&
-        !fakeSigner.verify(CONTENT, result) &&
-        Signs.HMAC.sign(a, CONTENT, KEY).toString("base64") === result &&
-        Signs.HMAC.verify(a, CONTENT, Buffer.from(result, "base64"), KEY)
-    ) {
-
-        console.info(`[${signer.hashAlgorithm}] Verification matched.`);
-    }
-    else {
-
-        console.error(`[${signer.hashAlgorithm}] Verification failed.`);
-    }
-}
-
-(async () => {
+for (const ENC of ENCODINGS) {
 
     for (let a of Signs.HMAC.getSupportedAlgorithms()) {
 
         const signer = Signs.HMAC.createSigner(
             a,
             KEY,
-            "base64"
+            ENC
         );
 
         const fakeSigner = Signs.HMAC.createSigner(
             a,
             FAKE_KEY,
-            "base64"
+            ENC
         );
 
-        const result = await signer.sign(
-            $fs.createReadStream(`${__dirname}/../test/bigfile.dat`)
-        );
+        const result = signer.sign(CONTENT);
 
-        console.debug(`[${signer.hashAlgorithm}][Stream]: Result = ${result}`);
+        console.debug(`[${ENC}][${signer.hashAlgorithm}]: Result = ${printable(result)}`);
 
         if (
-            (await signer.verify(
-                $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
-                result
-            )) &&
-            (!await fakeSigner.verify(
-                $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
-                result
-            )) &&
-            (await Signs.HMAC.verify(
-                a,
-                $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
-                Buffer.from(result, "base64"),
-                KEY
-            )) &&
-            ((await Signs.HMAC.sign(
-                a,
-                $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
-                KEY
-            )).toString("base64") === result)
+            signer.verify(CONTENT, result) &&
+            !fakeSigner.verify(CONTENT, result) &&
+            Signs.HMAC.verify(a, CONTENT, Signs.HMAC.sign(a, CONTENT, KEY), KEY)
         ) {
 
-            console.info(`[${signer.hashAlgorithm}][Stream] Verification matched.`);
+            console.info(`[${ENC}][${signer.hashAlgorithm}] Verification matched.`);
         }
         else {
 
-            console.error(`[${signer.hashAlgorithm}][Stream] Verification failed.`);
+            console.error(`[${ENC}][${signer.hashAlgorithm}] Verification failed.`);
+        }
+    }
+}
+
+(async () => {
+
+    for (const ENC of ENCODINGS) {
+
+        for (let a of Signs.HMAC.getSupportedAlgorithms()) {
+
+            const signer = Signs.HMAC.createSigner(
+                a,
+                KEY,
+                ENC
+            );
+
+            const fakeSigner = Signs.HMAC.createSigner(
+                a,
+                FAKE_KEY,
+                ENC
+            );
+
+            const result = await signer.sign(
+                $fs.createReadStream(`${__dirname}/../test/bigfile.dat`)
+            );
+
+            console.debug(`[${ENC}][stream][${signer.hashAlgorithm}]: Result = ${printable(result)}`);
+
+            if (
+                (await signer.verify(
+                    $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
+                    result
+                )) &&
+                (!await fakeSigner.verify(
+                    $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
+                    result
+                )) &&
+                (await Signs.HMAC.verify(
+                    a,
+                    $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
+                    await Signs.HMAC.sign(
+                        a,
+                        $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
+                        KEY
+                    ),
+                    KEY
+                ))
+            ) {
+
+                console.info(`[${ENC}][stream][${signer.hashAlgorithm}] Verification matched.`);
+            }
+            else {
+
+                console.error(`[${ENC}][stream][${signer.hashAlgorithm}] Verification failed.`);
+            }
         }
     }
 })();

@@ -18,6 +18,7 @@
 
 import * as Signs from "../lib";
 import * as $fs from "fs";
+import { printable } from "./utils";
 
 const PRI_KEY = $fs.readFileSync(`${__dirname}/../test/rsa-priv.pem`, {
     encoding: "utf8"
@@ -33,55 +34,9 @@ const FAKE_PUB_KEY = $fs.readFileSync(`${__dirname}/../test/rsa-wrong-pub.pem`, 
 
 const CONTENT = "Hello, how are you?";
 
-for (let a of Signs.RSA.getSupportedAlgorithms()) {
+const ENCODINGS: Signs.TSignature[] = ["base64", "buffer", "hex", "base64url"];
 
-    const signer = Signs.RSA.createSigner(
-        a,
-        PUB_KEY,
-        PRI_KEY,
-        Signs.ERSAPadding.PSS_MGF1,
-        "base64"
-    );
-
-    const fakeSigner = Signs.RSA.createSigner(
-        a,
-        FAKE_PUB_KEY,
-        PRI_KEY,
-        Signs.ERSAPadding.PSS_MGF1,
-        "base64"
-    );
-
-    try {
-
-        const signResult = signer.sign(CONTENT);
-
-        const verifyResult = signer.verify(
-            CONTENT,
-            signResult
-        )
-        && !fakeSigner.verify(CONTENT, signResult)
-        && Signs.RSA.verify(a, CONTENT, Buffer.from(signResult, "base64"), PUB_KEY, {
-            padding: Signs.ERSAPadding.PSS_MGF1
-        });
-
-        console.debug(`[${signer.hashAlgorithm}]: Result ${signResult}`);
-
-        if (verifyResult) {
-
-            console.info(`[${signer.hashAlgorithm}] Verification matched.`);
-        }
-        else {
-
-            console.error(`[${signer.hashAlgorithm}] Verification failed.`);
-        }
-    }
-    catch (e) {
-
-        console.error(`[${signer.hashAlgorithm}] Not supported with RSASSA-PKCS1-v1.5.`);
-    }
-}
-
-(async () => {
+for (const ENC of ENCODINGS) {
 
     for (let a of Signs.RSA.getSupportedAlgorithms()) {
 
@@ -90,7 +45,7 @@ for (let a of Signs.RSA.getSupportedAlgorithms()) {
             PUB_KEY,
             PRI_KEY,
             Signs.ERSAPadding.PSS_MGF1,
-            "base64"
+            ENC
         );
 
         const fakeSigner = Signs.RSA.createSigner(
@@ -98,44 +53,112 @@ for (let a of Signs.RSA.getSupportedAlgorithms()) {
             FAKE_PUB_KEY,
             PRI_KEY,
             Signs.ERSAPadding.PSS_MGF1,
-            "base64"
+            ENC
         );
 
         try {
 
-            const signResult = await signer.sign(
-                $fs.createReadStream(`${__dirname}/../test/bigfile.dat`)
-            );
+            const signResult = signer.sign(CONTENT);
 
-            const verifyResult = (await signer.verify(
-                $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
+            const verifyResult = signer.verify(
+                CONTENT,
                 signResult
-            )) && (!await fakeSigner.verify(
-                $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
-                signResult
-            )) &&
-            (await Signs.RSA.verify(
+            )
+            && !fakeSigner.verify(CONTENT, signResult)
+            && Signs.RSA.verify(
                 a,
-                $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
-                Buffer.from(signResult, "base64"),
+                CONTENT,
+                Signs.RSA.sign(
+                    a,
+                    CONTENT,
+                    { key: PRI_KEY, password: "" },
+                    { padding: Signs.ERSAPadding.PSS_MGF1 }
+                ),
                 PUB_KEY,
                 { padding: Signs.ERSAPadding.PSS_MGF1 }
-            ));
+            );
 
-            console.debug(`[${signer.hashAlgorithm}][Stream]: Result ${signResult}`);
+            console.debug(`[${ENC}][${signer.hashAlgorithm}]: Result ${printable(signResult)}`);
 
             if (verifyResult) {
 
-                console.info(`[${signer.hashAlgorithm}][Stream] Verification matched.`);
+                console.info(`[${ENC}][${signer.hashAlgorithm}] Verification matched.`);
             }
             else {
 
-                console.error(`[${signer.hashAlgorithm}][Stream] Verification failed.`);
+                console.error(`[${ENC}][${signer.hashAlgorithm}] Verification failed.`);
             }
         }
         catch (e) {
 
-            console.error(`[${signer.hashAlgorithm}][Stream] Not supported with RSASSA-PKCS1-v1.5.`);
+            console.error(`[${ENC}][${signer.hashAlgorithm}] Not supported with RSASSA-PKCS1-v1.5.`);
+        }
+    }
+}
+
+(async () => {
+
+    for (const ENC of ENCODINGS) {
+
+        for (let a of Signs.RSA.getSupportedAlgorithms()) {
+
+            const signer = Signs.RSA.createSigner(
+                a,
+                PUB_KEY,
+                PRI_KEY,
+                Signs.ERSAPadding.PSS_MGF1,
+                ENC
+            );
+
+            const fakeSigner = Signs.RSA.createSigner(
+                a,
+                FAKE_PUB_KEY,
+                PRI_KEY,
+                Signs.ERSAPadding.PSS_MGF1,
+                ENC
+            );
+
+            try {
+
+                const signResult = await signer.sign(
+                    $fs.createReadStream(`${__dirname}/../test/bigfile.dat`)
+                );
+
+                const verifyResult = (await signer.verify(
+                    $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
+                    signResult
+                )) && (!await fakeSigner.verify(
+                    $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
+                    signResult
+                )) &&
+                (await Signs.RSA.verify(
+                    a,
+                    $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
+                    await Signs.RSA.sign(
+                        a,
+                        $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
+                        { key: PRI_KEY, password: "" },
+                        { padding: Signs.ERSAPadding.PSS_MGF1 }
+                    ),
+                    PUB_KEY,
+                    { padding: Signs.ERSAPadding.PSS_MGF1 }
+                ));
+
+                console.debug(`[${ENC}][${signer.hashAlgorithm}][Stream]: Result ${printable(signResult)}`);
+
+                if (verifyResult) {
+
+                    console.info(`[${ENC}][${signer.hashAlgorithm}][Stream] Verification matched.`);
+                }
+                else {
+
+                    console.error(`[${ENC}][${signer.hashAlgorithm}][Stream] Verification failed.`);
+                }
+            }
+            catch (e) {
+
+                console.error(`[${ENC}][${signer.hashAlgorithm}][Stream] Not supported with RSASSA-PKCS1-v1.5.`);
+            }
         }
     }
 
