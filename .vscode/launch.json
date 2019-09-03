@@ -8,10 +8,10 @@
             "type": "node",
             "request": "launch",
             "name": "[LiteRT/Signatures.js] Sample 01 - Sign-With-HMAC",
-            "program": "${workspaceFolder}/src/samples/01-sign-with-HMAC.ts",
+            "program": "${workspaceFolder}/src/examples/01-sign-with-HMAC.ts",
             "sourceMaps": true,
             "outFiles": [
-                "${workspaceFolder}/samples/*.js",
+                "${workspaceFolder}/examples/*.js",
                 "${workspaceFolder}/lib/*.js"
             ]
         },
@@ -19,10 +19,10 @@
             "type": "node",
             "request": "launch",
             "name": "[LiteRT/Signatures.js] Sample 02 - Sign-With-RSA",
-            "program": "${workspaceFolder}/src/samples/02-sign-with-RSA.ts",
+            "program": "${workspaceFolder}/src/examples/02-sign-with-RSA.ts",
             "sourceMaps": true,
             "outFiles": [
-                "${workspaceFolder}/samples/*.js",
+                "${workspaceFolder}/examples/*.js",
                 "${workspaceFolder}/lib/*.js"
             ]
         },
@@ -30,10 +30,10 @@
             "type": "node",
             "request": "launch",
             "name": "[LiteRT/Signatures.js] Sample 03 - Sign-With-ECDSA",
-            "program": "${workspaceFolder}/src/samples/03-sign-with-ECDSA.ts",
+            "program": "${workspaceFolder}/src/examples/03-sign-with-ECDSA.ts",
             "sourceMaps": true,
             "outFiles": [
-                "${workspaceFolder}/samples/*.js",
+                "${workspaceFolder}/examples/*.js",
                 "${workspaceFolder}/lib/*.js"
             ]
         },
@@ -41,10 +41,10 @@
             "type": "node",
             "request": "launch",
             "name": "[LiteRT/Signatures.js] Sample 04 - Sign-With-RSA-PSS",
-            "program": "${workspaceFolder}/src/samples/04-sign-with-RSA-PSS.ts",
+            "program": "${workspaceFolder}/src/examples/04-sign-with-RSA-PSS.ts",
             "sourceMaps": true,
             "outFiles": [
-                "${workspaceFolder}/samples/*.js",
+                "${workspaceFolder}/examples/*.js",
                 "${workspaceFolder}/lib/*.js"
             ]
         },
@@ -52,10 +52,10 @@
             "type": "node",
             "request": "launch",
             "name": "[LiteRT/Signatures.js] Sample 05 - JWA",
-            "program": "${workspaceFolder}/src/samples/05-jwa.ts",
+            "program": "${workspaceFolder}/src/examples/05-jwa.ts",
             "sourceMaps": true,
             "outFiles": [
-                "${workspaceFolder}/samples/*.js",
+                "${workspaceFolder}/examples/*.js",
                 "${workspaceFolder}/lib/*.js"
             ]
         }

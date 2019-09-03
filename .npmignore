@@ -6,5 +6,5 @@
 /tslint.json
 /tsconfig.json
 /node_modules/
-/samples/
+/examples/
 /test/
