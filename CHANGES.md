@@ -1,5 +1,9 @@
 # Changes Logs
 
+## v2.1.0
+
+- Added new hash algorithms for HMAC signer.
+
 ## v2.0.1
 
 - Fixed the P1363 output of ECDSA.
