@@ -1,5 +1,5 @@
 /**
- *  Copyright 2019 Angus.Fenying <fenying@litert.org>
+ *  Copyright 2020 Angus.Fenying <fenying@litert.org>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,9 +20,12 @@ import * as C from "../Common";
 import * as Enc from "@litert/encodings";
 import * as I from "./Internal";
 
-export type TAlgorithms = "ripemd160" | "sha1" | "sha224" | "sha256" |
-                        "sha384" | "sha512" | "whirlpool" |
-                        "md5" | "mdc2" | "md4";
+export type TAlgorithms = "blake2b512" | "blake2s256" | "md4" | "md5" |
+                        "md5-sha1" | "mdc2" | "ripemd" | "ripemd160" |
+                        "rmd160" | "sha1" | "sha224" | "sha256" |
+                        "sha3-224" | "sha3-256" | "sha3-384" | "sha3-512" |
+                        "sha384" | "sha512" | "sha512-224" | "sha512-256" |
+                        "sm3" | "whirlpool";
 
 /**
  * Sign a signature by HMAC.
@@ -93,9 +96,12 @@ export const verify: C.IVerifierFn<TAlgorithms, string | Buffer> = function(
 export function getSupportedAlgorithms(): TAlgorithms[] {
 
     return [
-        "ripemd160", "sha1", "sha224", "sha256",
-        "sha384", "sha512", "whirlpool",
-        "md5", "mdc2", "md4"
+        "blake2b512", "blake2s256", "md4", "md5",
+        "md5-sha1", "mdc2", "ripemd", "ripemd160",
+        "rmd160", "sha1", "sha224", "sha256",
+        "sha3-224", "sha3-256", "sha3-384", "sha3-512",
+        "sha384", "sha512", "sha512-224", "sha512-256",
+        "sm3", "whirlpool"
     ];
 }
 
