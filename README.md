@@ -22,83 +22,62 @@ npm i @litert/signatures --save
 
 ## Usage
 
-### Quick Method
-
 ```ts
-import * as Signs from "@litert/signatures";
+import * as Signs from '@litert/signatures';
 
 // Sign by RSA-SHA-256 with PKCS1-v1.5 padding
-const rsaSign = Signs.RSA.sign("sha256", content, privKeyRSA);
+const rsaSign = Signs.RSA.sign('sha256', privKeyRSA, content);
 
 // Verify by RSA-SHA-256 with PKCS1-v1.5 padding
-if (Signs.RSA.verify("sha256", content, rsaSign, pubKeyRSA)) {
+if (Signs.RSA.verify('sha256', pubKeyRSA, content, rsaSign)) {
 
-    console.log("RSA ok");
+    console.log('RSA ok');
 }
 
 // Sign by RSA-SHA-256 with PSS-MGF1 padding
-const rsapssSign = Signs.RSA.sign("sha256", content, privKeyRSA, {
-    padding: Signs.ERSAPadding.PSS_MGF1
+const rsapssSign = Signs.RSA.sign('sha256', privKeyRSA, content, {
+    padding: 'pss-mgf1'
 });
 
 // Verify by RSA-SHA-256 with PSS-MGF1 padding
-if (Signs.RSA.verify("sha256", content, rsapssSign, pubKeyRSA, {
-    padding: Signs.ERSAPadding.PSS_MGF1
+if (Signs.RSA.verify('sha256', pubKeyRSA, content, rsapssSign, {
+    padding: 'pss-mgf1'
 })) {
 
-    console.log("RSA ok");
+    console.log('RSA ok');
 }
 
 // Sign by ECDSA-SHA-256
-const ecdsaSign = Signs.ECDSA.sign("sha256", content, privKeyECDSA);
+const ecdsaSign = Signs.ECDSA.sign('sha256', privKeyECDSA, content);
 
 // The output is of DER format.
-console.log(`ECDSA DER:   ${ecdsaSign.toString()}`);
+console.log(`ECDSA DER:   ${ecdsaSign.toString('hex')}`);
 
 // You can convert it into P1363 format
 // And transform it back to DER by method derToP1363
-console.log(`ECDSA p1363: ${Signs.ECDSA.p1363ToDER(ecdsaSign).toString()}`);
+console.log(`ECDSA p1363: ${Signs.ECDSA.p1363ToDER(ecdsaSign).toString('hex')}`);
+
+// or use format option:
+console.log(`ECDSA p1363: ${Signs.ECDSA.sign('sha256', privKeyECDSA, content, {format: 'ieee-p1363'}).toString('hex')}`);
+
 
 // Verify by ECDSA-SHA-256
-if (Signs.ECDSA.verify("sha256", content, ecdsaSign, pubKeyECDSA)) {
+if (Signs.ECDSA.verify('sha256', pubKeyECDSA, content, ecdsaSign)) {
 
-    console.log("ECDSA ok");
+    console.log('ECDSA ok');
 }
 
 // Sign by HMAC-SHA-256
-const hmacSign = Signs.HMAC.sign("sha256", content, hmacKey);
+const hmacSign = Signs.HMAC.sign('sha256', hmacKey, content);
 
 // Verify by HMAC-SHA-256
-if (Signs.HMAC.verify("sha256", content, hmacSign, hmacKey)) {
+if (Signs.HMAC.verify('sha256', hmacKey, content, hmacSign)) {
 
-    console.log("HMAC ok");
+    console.log('HMAC ok');
 }
 ```
 
-### Using Signer
-
-Signer is a key-bound signer object, with a specific hash-algorithm. e.g.
-
-```ts
-import * as Signs from "@litert/signatures";
-
-// Create a RSA signer of RSA-SHA-256 with PKCS1-v1.5 padding.
-const rsaSigner = Signs.RSA.createSigner(
-    "sha256",
-    pubKeyRSA,
-    privKeyRSA,
-    Signs.ERSAPadding.PKCS1_V1_5,
-    "base64url"
-);
-
-const sign = rsaSigner.sign(content);
-
-// Verify by RSA-SHA-256 with PKCS1-v1.5 padding
-if (rsaSigner.verify(content, rsaSign)) {
-
-    console.log("RSA ok");
-}
-```
+> See more [examples](./src/examples).
 
 ## Document
 

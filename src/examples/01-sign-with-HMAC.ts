@@ -1,5 +1,5 @@
 /**
- *  Copyright 2020 Angus.Fenying <fenying@litert.org>
+ *  Copyright 2021 Angus.Fenying <fenying@litert.org>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,106 +14,52 @@
  *  limitations under the License.
  */
 
-// tslint:disable:no-console
+import * as Signs from '../lib';
+import * as $fs from 'fs';
 
-import * as Signs from "../lib";
-import * as $fs from "fs";
-import { printable } from "./utils";
+const KEY = 'hello world!';
 
-const KEY = "hello world!";
+const FAKE_KEY = 'world hello!';
 
-const FAKE_KEY = "world hello!";
+const CONTENT = 'Hello, how are you?';
 
-const CONTENT = "Hello, how are you?";
+const DEBUG_DIR = `${__dirname}/../data`;
 
-const ENCODINGS: Signs.TSignature[] = ["base64", "buffer", "hex", "base64url"];
-
-for (const ENC of ENCODINGS) {
-
-    for (let a of Signs.HMAC.getSupportedAlgorithms()) {
-
-        const signer = Signs.HMAC.createSigner(
-            a,
-            KEY,
-            ENC
-        );
-
-        const fakeSigner = Signs.HMAC.createSigner(
-            a,
-            FAKE_KEY,
-            ENC
-        );
-
-        const result = signer.sign(CONTENT);
-
-        console.debug(`[${ENC}][${signer.hashAlgorithm}]: Result = ${printable(result)}`);
-
-        if (
-            signer.verify(CONTENT, result) &&
-            !fakeSigner.verify(CONTENT, result) &&
-            Signs.HMAC.verify(a, CONTENT, Signs.HMAC.sign(a, CONTENT, KEY), KEY)
-        ) {
-
-            console.info(`[${ENC}][${signer.hashAlgorithm}] Verification matched.`);
-        }
-        else {
-
-            console.error(`[${ENC}][${signer.hashAlgorithm}] Verification failed.`);
-        }
-    }
-}
+const BIG_FILE_PATH = `${DEBUG_DIR}/bigfile.dat`;
 
 (async () => {
 
-    for (const ENC of ENCODINGS) {
+    for (let algo of Signs.HMAC.getSupportedAlgorithms()) {
 
-        for (let a of Signs.HMAC.getSupportedAlgorithms()) {
+        const algoName = `hmac-${algo}`;
 
-            const signer = Signs.HMAC.createSigner(
-                a,
-                KEY,
-                ENC
-            );
+        const signer = Signs.HMAC.createSigner(algo, KEY);
 
-            const fakeSigner = Signs.HMAC.createSigner(
-                a,
-                FAKE_KEY,
-                ENC
-            );
+        const fakeSigner = Signs.HMAC.createSigner(algo, FAKE_KEY);
 
-            const result = await signer.sign(
-                $fs.createReadStream(`${__dirname}/../test/bigfile.dat`)
-            );
+        const result = signer.sign(CONTENT);
+        const fileResult = await signer.signStream($fs.createReadStream(BIG_FILE_PATH));
 
-            console.debug(`[${ENC}][stream][${signer.hashAlgorithm}]: Result = ${printable(result)}`);
+        if (
+            signer.verify(CONTENT, result)
+            && !fakeSigner.verify(CONTENT, result)
+            && Signs.HMAC.verify(algo, KEY, CONTENT, result) 
+            && !Signs.HMAC.verify(algo, FAKE_KEY, CONTENT, result)
+            
+            && await signer.verifyStream($fs.createReadStream(BIG_FILE_PATH), fileResult)
+            && !await fakeSigner.verifyStream($fs.createReadStream(BIG_FILE_PATH), fileResult)
+            && await Signs.HMAC.verifyStream(algo, KEY, $fs.createReadStream(BIG_FILE_PATH), fileResult)
+            && !await Signs.HMAC.verifyStream(algo, FAKE_KEY, $fs.createReadStream(BIG_FILE_PATH), fileResult)
+            && 1
+        ) {
 
-            if (
-                (await signer.verify(
-                    $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
-                    result
-                )) &&
-                (!await fakeSigner.verify(
-                    $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
-                    result
-                )) &&
-                (await Signs.HMAC.verify(
-                    a,
-                    $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
-                    await Signs.HMAC.sign(
-                        a,
-                        $fs.createReadStream(`${__dirname}/../test/bigfile.dat`),
-                        KEY
-                    ),
-                    KEY
-                ))
-            ) {
+            console.info(`[${algoName}] Verification matched.`);
+        }
+        else {
 
-                console.info(`[${ENC}][stream][${signer.hashAlgorithm}] Verification matched.`);
-            }
-            else {
-
-                console.error(`[${ENC}][stream][${signer.hashAlgorithm}] Verification failed.`);
-            }
+            console.error(`[${algoName}] Verification failed.`);
         }
     }
+    
+
 })();

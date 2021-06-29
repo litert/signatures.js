@@ -1,5 +1,5 @@
 /**
- *  Copyright 2020 Angus.Fenying <fenying@litert.org>
+ *  Copyright 2021 Angus.Fenying <fenying@litert.org>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,9 +14,7 @@
  *  limitations under the License.
  */
 
-export * from "./Common";
-import * as HMAC from "./Signers/HMAC";
-import * as RSA from "./Signers/RSA";
-import * as ECDSA from "./Signers/ECDSA";
-
-export { HMAC, RSA, ECDSA };
+export * from './Common';
+export * as HMAC from './HMAC';
+export * as RSA from './RSA';
+export * as ECDSA from './ECDSA';

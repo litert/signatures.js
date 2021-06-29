@@ -1,20 +1,21 @@
 {
   "name": "@litert/signatures",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "description": "A signatures library based on Node.js crypto module.",
   "main": "./lib/index.js",
   "scripts": {
-    "prepare": "npm run rebuild",
+    "prepublishOnly": "npm run rebuild && npm test && npm run rebuild-production",
     "build": "echo Using TypeScript && tsc -v && tsc -p .",
+    "build-production": "echo Using TypeScript && tsc -v && tsc -p tsconfig.production.json",
     "build-watch": "echo Using TypeScript && tsc -v && tsc -w -p .",
     "rebuild": "npm run clean && npm run lint && npm run build",
-    "test": "echo See directory src/examples",
-    "clean": "rm -rf lib examples",
-    "lint": "tslint -p . -c tslint.json"
+    "rebuild-production": "npm run clean && npm run build-production",
+    "test": "mocha",
+    "clean": "rm -rf lib test examples",
+    "typecheck": "tsc -p . --noEmit",
+    "lint": "eslint --ext ts src"
   },
   "keywords": [
-    "litert",
-    "lrt",
     "signature",
     "hmac",
     "rsa",
@@ -33,15 +34,20 @@
   "homepage": "https://github.com/litert/signatures.js#readme",
   "types": "./lib/index.d.ts",
   "typings": "./lib/index.d.ts",
-  "dependencies": {
-    "@litert/encodings": "^2.1.0"
-  },
   "devDependencies": {
-    "@types/node": "^13.7.4",
-    "tslint": "^6.0.0",
-    "typescript": "^3.8.2"
+    "@commitlint/cli": "^12.1.4",
+    "@commitlint/config-conventional": "^12.1.4",
+    "@litert/encodings": "^2.2.0",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "^15.12.5",
+    "@typescript-eslint/eslint-plugin": "^4.28.0",
+    "@typescript-eslint/parser": "^4.28.0",
+    "eslint": "^7.29.0",
+    "husky": "^6.0.0",
+    "mocha": "^9.0.1",
+    "typescript": "^4.3.4"
   },
   "engines": {
-    "node": ">=6.0.0"
+    "node": ">=12.0.0"
   }
 }
