@@ -65,7 +65,7 @@ function ecdsaRecoverRS(input: Buffer): Buffer {
         return input.slice(start - 1);
     }
 
-    let output = Buffer.alloc(input.length + 1);
+    const output = Buffer.alloc(input.length + 1);
 
     input.copy(output, 1);
     output[0] = 0;
@@ -86,7 +86,7 @@ function derReadLength(bf: Buffer, offset: number): [number, number] {
      */
     if (length > 0x7F) {
 
-        let llen = length & 0x7F;
+        const llen = length & 0x7F;
         UINT32_READ_BUFFER.fill(0);
         bf.copy(UINT32_READ_BUFFER, 4 - llen, offset, offset + llen);
         length = UINT32_READ_BUFFER.readUInt32BE(0);
@@ -119,20 +119,22 @@ function removePrependZero(bf: Buffer): Buffer {
  */
 export function derToP1363(der: Buffer): Buffer {
 
+    let ctx: [number, number] = [0, 0];
+
     let [, offset] = derReadLength(der, 1);
 
-    let rL: number;
-    let sL: number;
+    ctx = derReadLength(der, ++offset);
+    offset = ctx[1];
 
-    [rL, offset] = derReadLength(der, ++offset);
+    const r = removePrependZero(der.slice(offset, offset + ctx[0]));
 
-    let r = removePrependZero(der.slice(offset, offset + rL));
+    offset += ctx[0];
 
-    offset += rL;
+    ctx = derReadLength(der, ++offset);
 
-    [sL, offset] = derReadLength(der, ++offset);
+    offset = ctx[1];
 
-    let s = removePrependZero(der.slice(offset, offset + sL));
+    const s = removePrependZero(der.slice(offset, offset + ctx[0]));
 
     if (s.length > r.length) {
 
@@ -157,9 +159,6 @@ export function p1363ToDER(p1363: Buffer): Buffer {
 
     let base = 0;
 
-    let r: Buffer;
-    let s: Buffer;
-
     const hL = p1363.length / 2;
 
     /**
@@ -169,8 +168,8 @@ export function p1363ToDER(p1363: Buffer): Buffer {
      *
      * @see https://bitcointalk.org/index.php?topic=215205.msg2258789#msg2258789
      */
-    r = ecdsaRecoverRS(p1363.slice(0, hL));
-    s = ecdsaRecoverRS(p1363.slice(hL));
+    const r = ecdsaRecoverRS(p1363.slice(0, hL));
+    const s = ecdsaRecoverRS(p1363.slice(hL));
 
     /**
      * Using long form length if it's larger than 0x7F.
@@ -349,10 +348,11 @@ export function signStreamWithCustomP1363(
 
                 if (opts?.format === 'ieee-p1363') {
 
-                    return resolve(derToP1363(ret));
+                    resolve(derToP1363(ret));
+                    return;
                 }
 
-                return resolve(ret);
+                resolve(ret);
             }
             catch (e) {
 
