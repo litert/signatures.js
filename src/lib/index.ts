@@ -18,3 +18,4 @@ export * from './Common';
 export * as HMAC from './HMAC';
 export * as RSA from './RSA';
 export * as ECDSA from './ECDSA';
+export * as Hash from './Hash';

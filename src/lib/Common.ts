@@ -58,3 +58,25 @@ export interface ISigner {
      */
     signAlgorithm: string;
 }
+
+export interface IHasher {
+
+    /**
+     * Calculate the hash of simple short data.
+     *
+     * @param message   The payload to be processed.
+     */
+    hash(message: Buffer | string): Buffer;
+
+    /**
+     * Calculate the hash of data insides stream.
+     *
+     * @param message   The payload to be processed.
+     */
+    hashStream(message: Readable): Promise<Buffer>;
+
+    /**
+     * The digest hash algorithm of this hasher.
+     */
+    algorithm: string;
+}

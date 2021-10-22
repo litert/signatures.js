@@ -7,6 +7,16 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "[LiteRT/Signatures.js] Sample 00 - Hash",
+            "program": "${workspaceFolder}/src/examples/00-hash.ts",
+            "sourceMaps": true,
+            "outFiles": [
+                "${workspaceFolder}/**/*.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "[LiteRT/Signatures.js] Sample 01 - Sign-With-HMAC",
             "program": "${workspaceFolder}/src/examples/01-sign-with-HMAC.ts",
             "sourceMaps": true,

@@ -10,6 +10,7 @@ module.exports = {
             'merge'
         ]],
         'scope-enum': [2, 'always', [
+            'hash',
             'hmac',
             'ecdsa',
             'rsa',

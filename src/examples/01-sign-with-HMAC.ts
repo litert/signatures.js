@@ -60,6 +60,5 @@ const BIG_FILE_PATH = `${DEBUG_DIR}/bigfile.dat`;
             console.error(`[${algoName}] Verification failed.`);
         }
     }
-    
 
 })();
