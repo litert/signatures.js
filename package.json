@@ -34,7 +34,7 @@
   "types": "./lib/index.d.ts",
   "typings": "./lib/index.d.ts",
   "devDependencies": {
-    "@commitlint/cli": "^13.2.1",
+    "@commitlint/cli": "^17.6.1",
     "@commitlint/config-conventional": "^13.2.0",
     "@litert/encodings": "^2.2.0",
     "@types/mocha": "^8.2.2",
