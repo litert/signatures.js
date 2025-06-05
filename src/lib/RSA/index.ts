@@ -13,12 +13,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-export type * from './Decl';
-export * as HMAC from './HMAC';
-export * as RSA from './RSA';
-export * as EcDSA from './ECDSA';
-export * as ECDSA from './ECDSA';
-export * as EdDSA from './EDDSA';
-export * as Hash from './Hash';
-export * as Errors from './Errors';
+export * from './ModuleApi';
+export * from './RsaSigner';

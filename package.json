@@ -1,18 +1,20 @@
 {
   "name": "@litert/signatures",
-  "version": "3.1.0",
+  "version": "4.0.0",
   "description": "A signatures library based on Node.js crypto module.",
   "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "typings": "./lib/index.d.ts",
   "scripts": {
-    "prepublishOnly": "npm run rebuild && npm test && npm run rebuild",
-    "build": "echo Using TypeScript && tsc -v && tsc -p .",
-    "build-watch": "echo Using TypeScript && tsc -v && tsc -w -p .",
+    "prepublishOnly": "npm run rebuild",
+    "build": "tsc -v && tsc -p .",
+    "build-watch": "tsc -v && tsc -w -p .",
     "rebuild": "npm run clean && npm run lint && npm run build",
-    "test": "mocha",
-    "clean": "rm -rf lib test examples",
-    "typecheck": "tsc -p . --noEmit",
-    "lint": "eslint --ext ts src",
-    "prepare": "husky install"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "clean": "rm -rf lib examples test",
+    "lint": "./utils/eslint.sh",
+    "prepare": "husky",
+    "test": "node --enable-source-maps --test --experimental-test-coverage test/*.test.js"
   },
   "keywords": [
     "signature",
@@ -31,22 +33,17 @@
     "url": "https://github.com/litert/signatures.js/issues"
   },
   "homepage": "https://github.com/litert/signatures.js#readme",
-  "types": "./lib/index.d.ts",
-  "typings": "./lib/index.d.ts",
   "devDependencies": {
-    "@commitlint/cli": "^17.6.1",
-    "@commitlint/config-conventional": "^13.2.0",
-    "@litert/encodings": "^2.2.0",
-    "@types/mocha": "^8.2.2",
-    "@types/node": "^16.11.2",
-    "@typescript-eslint/eslint-plugin": "^5.1.0",
-    "@typescript-eslint/parser": "^5.1.0",
-    "eslint": "^8.0.1",
-    "husky": "^7.0.4",
-    "mocha": "^9.0.1",
-    "typescript": "^4.4.4"
+    "@commitlint/cli": "^19.6.1",
+    "@commitlint/config-conventional": "^19.6.0",
+    "@litert/encodings": "^2.3.0",
+    "@litert/eslint-plugin-rules": "^0.3.1",
+    "@types/node": "^22.10.2",
+    "husky": "^9.1.7",
+    "typedoc": "^0.28.5",
+    "typescript": "^5.7.2"
   },
   "engines": {
-    "node": ">=12.0.0"
+    "node": ">=18.0.0"
   }
 }

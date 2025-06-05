@@ -6,8 +6,7 @@ OUTPUT_DIR=$SCRIPT_ROOT/data
 
 mkdir $OUTPUT_DIR -p
 
-rm -f $OUTPUT_DIR/*.pem
-rm -f $OUTPUT_DIR/*.dat
+rm -f $OUTPUT_DIR/*
 
 # Random File
 
@@ -15,14 +14,17 @@ dd if=/dev/random of=$OUTPUT_DIR/bigfile.dat bs=1M count=20
 
 # RSA
 
-openssl genrsa 2048 > $OUTPUT_DIR/rsa-priv.pem
-openssl rsa -in $OUTPUT_DIR/rsa-priv.pem -pubout > $OUTPUT_DIR/rsa-pub.pem
+for keyLen in 1024 2048 3072 4096; do
 
-openssl genrsa 2048 > $OUTPUT_DIR/rsa-wrong-priv.pem
-openssl rsa -in $OUTPUT_DIR/rsa-wrong-priv.pem -pubout > $OUTPUT_DIR/rsa-wrong-pub.pem
+    openssl genrsa $keyLen > $OUTPUT_DIR/rsa-priv-$keyLen.pem
+    openssl rsa -in $OUTPUT_DIR/rsa-priv-$keyLen.pem -pubout > $OUTPUT_DIR/rsa-pub-$keyLen.pem
 
-openssl genrsa 2048 -passout pass:test_pass > $OUTPUT_DIR/rsa-passphrase-priv.pem
-openssl rsa -in $OUTPUT_DIR/rsa-passphrase-priv.pem -pubout -passin pass:test_pass > $OUTPUT_DIR/rsa-passphrase-pub.pem
+    openssl genrsa $keyLen > $OUTPUT_DIR/rsa-wrong-priv-$keyLen.pem
+    openssl rsa -in $OUTPUT_DIR/rsa-wrong-priv-$keyLen.pem -pubout > $OUTPUT_DIR/rsa-wrong-pub-$keyLen.pem
+
+    openssl genrsa -passout pass:test_pass $keyLen > $OUTPUT_DIR/rsa-passphrase-priv-$keyLen.pem
+    openssl rsa -in $OUTPUT_DIR/rsa-passphrase-priv-$keyLen.pem -pubout -passin pass:test_pass > $OUTPUT_DIR/rsa-passphrase-pub-$keyLen.pem
+done
 
 # ECDSA
 
@@ -62,4 +64,24 @@ openssl ec -in $OUTPUT_DIR/ec512-priv.pem -pubout > $OUTPUT_DIR/ec512-pub.pem
 openssl ecparam -out $OUTPUT_DIR/ec512-wrong-priv.pem -name brainpoolP512t1 -genkey
 openssl ec -in $OUTPUT_DIR/ec512-wrong-priv.pem -pubout > $OUTPUT_DIR/ec512-wrong-pub.pem
 
-rm $OUTPUT_DIR/*-wrong-priv.pem
+# EDDSA
+
+openssl genpkey -algorithm ed25519 -out $OUTPUT_DIR/ed25519-priv.pem
+openssl pkey -in $OUTPUT_DIR/ed25519-priv.pem -pubout > $OUTPUT_DIR/ed25519-pub.pem
+
+openssl genpkey -algorithm ed448 -out $OUTPUT_DIR/ed448-priv.pem
+openssl pkey -in $OUTPUT_DIR/ed448-priv.pem -pubout > $OUTPUT_DIR/ed448-pub.pem
+
+openssl genpkey -algorithm ed25519 -out $OUTPUT_DIR/ed25519-passphrase-priv.pem -pass pass:test_pass
+openssl pkey -in $OUTPUT_DIR/ed25519-passphrase-priv.pem -pubout -passin pass:test_pass > $OUTPUT_DIR/ed25519-passphrase-pub.pem
+
+openssl genpkey -algorithm ed448 -out $OUTPUT_DIR/ed448-passphrase-priv.pem -pass pass:test_pass
+openssl pkey -in $OUTPUT_DIR/ed448-passphrase-priv.pem -pubout -passin pass:test_pass > $OUTPUT_DIR/ed448-passphrase-pub.pem
+
+# Wrong EDDSA keys
+
+openssl genpkey -algorithm ed25519 -out $OUTPUT_DIR/ed25519-wrong-priv.pem
+openssl pkey -in $OUTPUT_DIR/ed25519-wrong-priv.pem -pubout > $OUTPUT_DIR/ed25519-wrong-pub.pem
+
+openssl genpkey -algorithm ed448 -out $OUTPUT_DIR/ed448-wrong-priv.pem
+openssl pkey -in $OUTPUT_DIR/ed448-wrong-priv.pem -pubout > $OUTPUT_DIR/ed448-wrong-pub.pem

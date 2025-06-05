@@ -16,3 +16,6 @@
 /data/
 /generate-keys.sh
 /CHANGES.md
+/eslint.config.js
+/utils/
+/tmp/

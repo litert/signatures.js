@@ -18,7 +18,7 @@
             "type": "node",
             "request": "launch",
             "name": "[LiteRT/Signatures.js] Sample 01 - Sign-With-HMAC",
-            "program": "${workspaceFolder}/src/examples/01-sign-with-HMAC.ts",
+            "program": "${workspaceFolder}/src/examples/01-hmac.ts",
             "sourceMaps": true,
             "outFiles": [
                 "${workspaceFolder}/**/*.js"

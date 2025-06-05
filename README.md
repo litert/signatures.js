@@ -11,8 +11,8 @@ A signatures library based on Node.js crypto module.
 
 ## Requirement
 
-- TypeScript v3.1.x (or newer)
-- Node.js v8.0.0 (or newer)
+- TypeScript v5.0.x (or newer)
+- Node.js v18.0.0 (or newer)
 
 ## Installation
 
@@ -22,66 +22,33 @@ npm i @litert/signatures --save
 
 ## Usage
 
-```ts
-import * as Signs from '@litert/signatures';
+- [Hash/Digest](./src/examples/00-hash.ts)
 
-// Sign by RSA-SHA-256 with PKCS1-v1.5 padding
-const rsaSign = Signs.RSA.sign('sha256', privKeyRSA, content);
+    The utilities API for calculating hash/digest of data.
 
-// Verify by RSA-SHA-256 with PKCS1-v1.5 padding
-if (Signs.RSA.verify('sha256', pubKeyRSA, content, rsaSign)) {
+- [HMAC](./src/examples/01-hmac.ts)
 
-    console.log('RSA ok');
-}
+    The API for signing/verifying data using HMAC.
 
-// Sign by RSA-SHA-256 with PSS-MGF1 padding
-const rsapssSign = Signs.RSA.sign('sha256', privKeyRSA, content, {
-    padding: 'pss-mgf1'
-});
+- [RSA](./src/examples/02-rsa.ts)
 
-// Verify by RSA-SHA-256 with PSS-MGF1 padding
-if (Signs.RSA.verify('sha256', pubKeyRSA, content, rsapssSign, {
-    padding: 'pss-mgf1'
-})) {
+    The API for signing/verifying data using RSA.
 
-    console.log('RSA ok');
-}
+- [RSA-PSS](./src/examples/03-rsa-pss.ts)
 
-// Sign by ECDSA-SHA-256
-const ecdsaSign = Signs.ECDSA.sign('sha256', privKeyECDSA, content);
+    The API for signing/verifying data using RSA-PSS.
 
-// The output is of DER format.
-console.log(`ECDSA DER:   ${ecdsaSign.toString('hex')}`);
+- [EcDSA](./src/examples/04-ecdsa.ts)
 
-// You can convert it into P1363 format
-// And transform it back to DER by method derToP1363
-console.log(`ECDSA p1363: ${Signs.ECDSA.p1363ToDER(ecdsaSign).toString('hex')}`);
+    The API for signing/verifying data using EcDSA.
 
-// or use format option:
-console.log(`ECDSA p1363: ${Signs.ECDSA.sign('sha256', privKeyECDSA, content, {format: 'ieee-p1363'}).toString('hex')}`);
+- [EdDSA](./src/examples/05-eddsa.ts)
 
-
-// Verify by ECDSA-SHA-256
-if (Signs.ECDSA.verify('sha256', pubKeyECDSA, content, ecdsaSign)) {
-
-    console.log('ECDSA ok');
-}
-
-// Sign by HMAC-SHA-256
-const hmacSign = Signs.HMAC.sign('sha256', hmacKey, content);
-
-// Verify by HMAC-SHA-256
-if (Signs.HMAC.verify('sha256', hmacKey, content, hmacSign)) {
-
-    console.log('HMAC ok');
-}
-```
-
-> See more [examples](./src/examples).
+    The API for signing/verifying data using EdDSA.
 
 ## Document
 
-Preparing yet.
+- [API Docs (en-US)](https://litert.org/projects/signatures.js/api-docs)
 
 ## License
 
