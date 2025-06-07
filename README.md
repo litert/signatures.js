@@ -50,6 +50,8 @@ npm i @litert/signatures --save
 
 - [API Docs (en-US)](https://litert.org/projects/signatures.js/api-docs)
 
+    > Or local [markdown edition](./docs/en-us/api-docs-md/README.md).
+
 ## License
 
 This library is published under [Apache-2.0](./LICENSE) license.
